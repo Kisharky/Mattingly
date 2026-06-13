@@ -230,6 +230,26 @@ button, input, select, textarea, p, div, span, label {
     font-weight: 500 !important;
     font-family: 'Inter', sans-serif !important;
 }
+
+/* Floating chat FAB — targets the key="fab_chat" button */
+[data-testid="stMain"] div:has(> [data-testid="stButton"] > button[kind="secondary"]#fab_chat_btn),
+div[data-key="fab_chat"] > button,
+div[data-testid="stButton"]:has(button[title="fab_chat"]) > button {
+    position: fixed !important;
+    bottom: 28px !important;
+    right: 28px !important;
+    z-index: 99999 !important;
+    width: 56px !important;
+    height: 56px !important;
+    border-radius: 50% !important;
+    background: #005A32 !important;
+    color: white !important;
+    border: none !important;
+    font-size: 22px !important;
+    padding: 0 !important;
+    box-shadow: 0 4px 20px rgba(0,90,50,0.45) !important;
+    cursor: pointer !important;
+}
 .stButton > button:hover {
     border-color: #005A32 !important;
     color: #005A32 !important;
@@ -327,7 +347,7 @@ hr { border-color: #E5E7EB !important; }
     gap: 8px;
     pointer-events: none;
 }
-#profit-lens-fab a {
+#profit-lens-fab a, #profit-lens-fab button {
     width: 56px;
     height: 56px;
     border-radius: 50%;
@@ -339,8 +359,10 @@ hr { border-color: #E5E7EB !important; }
     justify-content: center;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
     pointer-events: all;
+    border: none;
+    padding: 0;
 }
-#profit-lens-fab a:hover {
+#profit-lens-fab a:hover, #profit-lens-fab button:hover {
     transform: scale(1.08);
     box-shadow: 0 6px 28px rgba(0,90,50,0.55);
 }
@@ -369,14 +391,14 @@ hr { border-color: #E5E7EB !important; }
 st.markdown("""
 <div id="profit-lens-fab">
   <div class="fab-label">ASK PROFIT LENS</div>
-  <a href="/?open_chat=1" target="_top" style="all:unset;cursor:pointer;display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:#005A32;box-shadow:0 4px 20px rgba(0,90,50,0.45)">
+  <button onclick="window.location.href='/?open_chat=1'" style="all:unset;cursor:pointer;display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:#005A32;box-shadow:0 4px 20px rgba(0,90,50,0.45)">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="white"/>
       <circle cx="8" cy="11" r="1.2" fill="#005A32"/>
       <circle cx="12" cy="11" r="1.2" fill="#005A32"/>
       <circle cx="16" cy="11" r="1.2" fill="#005A32"/>
     </svg>
-  </a>
+  </button>
 </div>
 """, unsafe_allow_html=True)
 
@@ -2478,18 +2500,6 @@ PAGE_FN = {
     "Tickets":                page_tickets,
     "Load Data":              page_load_data,
 }
-
-page = st.session_state.get("page", "Dashboard")
-PAGE_FN = {
-    "Dashboard":              page_dashboard,
-    "Customer Profitability": page_customer_profitability,
-    "Action Queue":           page_action_queue,
-    "Recovery Tracker":       page_recovery,
-    "AI Assistant":           page_ai_assistant,
-    "Tickets":                page_tickets,
-    "Load Data":              page_load_data,
-}
-
 page = st.session_state.get("page", "Dashboard")
 fn = PAGE_FN.get(page)
 if fn:
