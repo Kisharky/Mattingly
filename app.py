@@ -451,8 +451,12 @@ with st.sidebar:
 
     # Warehouse selector
     st.markdown("<div style='font-size:9px;letter-spacing:2px;color:#6B9E83;font-weight:600;padding:0 16px;margin-bottom:6px'>WAREHOUSE</div>", unsafe_allow_html=True)
-    wh_label = st.selectbox("Warehouse", list(WAREHOUSES.keys()), label_visibility="collapsed",
-                            index=list(WAREHOUSES.keys()).index(st.session_state.warehouse))
+    _wh_keys = list(WAREHOUSES.keys())
+    _wh_default = st.session_state.get("warehouse", _wh_keys[0])
+    if _wh_default not in _wh_keys:
+        _wh_default = _wh_keys[0]
+    wh_label = st.selectbox("Warehouse", _wh_keys, label_visibility="collapsed",
+                            index=_wh_keys.index(_wh_default), key="wh_sel")
     st.session_state.warehouse = wh_label
     wh_id = WAREHOUSES[wh_label]
     is_live = wh_id == "WH001"
@@ -463,8 +467,12 @@ with st.sidebar:
 
     # Role selector
     st.markdown("<div style='font-size:9px;letter-spacing:2px;color:#6B9E83;font-weight:600;padding:0 16px;margin-bottom:6px'>ROLE</div>", unsafe_allow_html=True)
-    role = st.selectbox("Role", list(ROLES.keys()), label_visibility="collapsed",
-                        index=list(ROLES.keys()).index(st.session_state.role))
+    _role_keys = list(ROLES.keys())
+    _role_default = st.session_state.get("role", _role_keys[0])
+    if _role_default not in _role_keys:
+        _role_default = _role_keys[0]
+    role = st.selectbox("Role", _role_keys, label_visibility="collapsed",
+                        index=_role_keys.index(_role_default), key="role_sel")
     st.session_state.role = role
     st.markdown(f"""
     <div style='background:rgba(255,255,255,0.06);border-radius:3px;padding:8px 12px;
@@ -1108,6 +1116,38 @@ def page_dashboard():
     pct   = min(stats["recovered"] / RECOVERY_TARGET * 100, 100) if RECOVERY_TARGET else 0
     all_tickets = db.get_tickets(WAREHOUSE_ID)
 
+    # ── HOW THIS WORKS — always visible on first load ─────────
+    st.markdown(f"""
+    <div style='background:#0D2B1A;border:1px solid #1F4A2E;border-radius:6px;
+                padding:16px 20px;margin-bottom:20px'>
+      <div style='font-size:10px;font-weight:700;letter-spacing:2px;color:#5DBF8A;margin-bottom:12px'>
+        HOW PROFIT LENS WORKS
+      </div>
+      <div style='display:flex;gap:0;align-items:stretch'>
+        <div style='flex:1;padding:10px 14px;border-right:1px solid #1F4A2E'>
+          <div style='font-size:18px;margin-bottom:6px'>🔍</div>
+          <div style='font-size:11px;font-weight:700;color:#FFFFFF;margin-bottom:4px'>1. FIND</div>
+          <div style='font-size:11px;color:#8FBF9F;line-height:1.5'>ABC engine analyses your warehouse data and identifies where money is leaking — below-cost pricing, unbilled work, exceptions.</div>
+        </div>
+        <div style='flex:1;padding:10px 14px;border-right:1px solid #1F4A2E'>
+          <div style='font-size:18px;margin-bottom:6px'>🎫</div>
+          <div style='font-size:11px;font-weight:700;color:#FFFFFF;margin-bottom:4px'>2. TICKET</div>
+          <div style='font-size:11px;color:#8FBF9F;line-height:1.5'>Each finding becomes a ticket, routed to the right person — CEO approves pricing, Commercial Lead negotiates, Site Manager fixes data.</div>
+        </div>
+        <div style='flex:1;padding:10px 14px;border-right:1px solid #1F4A2E'>
+          <div style='font-size:18px;margin-bottom:6px'>⚡</div>
+          <div style='font-size:11px;font-weight:700;color:#FFFFFF;margin-bottom:4px'>3. ACT</div>
+          <div style='font-size:11px;color:#8FBF9F;line-height:1.5'>Each role works their queue. Close a ticket when the action is complete — a repricing approved, a rebill sent, a data error fixed.</div>
+        </div>
+        <div style='flex:1;padding:10px 14px'>
+          <div style='font-size:18px;margin-bottom:6px'>💰</div>
+          <div style='font-size:11px;font-weight:700;color:#FFFFFF;margin-bottom:4px'>4. RECOVER</div>
+          <div style='font-size:11px;color:#8FBF9F;line-height:1.5'>Closing tickets moves the recovery bar. Target: <strong style='color:#5DBF8A'>$1.15M in 9 months</strong> from $1.86M identified across 30 customers.</div>
+        </div>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
     # ── CEO view ──────────────────────────────────────────────
     if role == "CEO":
         st.markdown(page_header(
@@ -1364,7 +1404,7 @@ def page_dashboard():
         k1.markdown(kpi_card("Open Operational", str(len(open_mine)), "Tickets assigned to Site Manager", C_AMBER), unsafe_allow_html=True)
         k2.markdown(kpi_card("Data Hygiene", str(len(hygiene_t)), "Must close before negotiations", C_RED if hygiene_t else C_GREEN), unsafe_allow_html=True)
         k3.markdown(kpi_card("Delta Exception Rate", "14.1%", "vs 5.8% network avg — investigate", C_RED), unsafe_allow_html=True)
-        k4.markdown(kpi_card("True Pick Cost", "$0.284/pick", "Labour-only, engine-verified", C_RED), unsafe_allow_html=True)
+        k4.markdown(kpi_card("True Pick Cost", "$0.265/pick", "All-in labour cost (ABC analysis)", C_RED), unsafe_allow_html=True)
         k5.markdown(kpi_card("Completed by You", str(len(done_mine)), "Tickets resolved this period", C_GREEN), unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
 
@@ -1397,11 +1437,23 @@ def page_dashboard():
         </div>
         """, unsafe_allow_html=True)
 
+        # Plain-English context for Site Manager
+        st.markdown(f"""
+        <div style='background:{C_BLUE_LITE};border:1px solid #C3D5EC;border-radius:4px;
+                    padding:12px 16px;margin-bottom:16px;font-size:12px;color:{C_BLUE};line-height:1.6'>
+          <strong>Your role in plain English:</strong> The ABC analysis (Activity-Based Costing) shows
+          every customer is being charged less than it costs to serve them — $0.265 per pick is what it
+          actually costs Mattingly in labour; most customers pay $0.12–$0.17. Your job is to make sure
+          the pick count data is accurate and exceptions are recorded, so the Commercial team can go back
+          to customers with clean numbers they can't dispute.
+        </div>
+        """, unsafe_allow_html=True)
+
         _render_next_action(role, all_tickets)
 
         left, right = st.columns([3, 2])
         with left:
-            st.markdown(sec("Priority — Data Quality (Close Before Negotiations)"), unsafe_allow_html=True)
+            st.markdown(sec("Priority — Data Quality (Fix Before Negotiations)"), unsafe_allow_html=True)
             if hygiene_t:
                 for t in hygiene_t:
                     _ticket_row(t)
@@ -1869,7 +1921,7 @@ def page_recovery():
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ── Opportunity Reconciliation ─────────────────────────
-    with st.expander("📊 How $2.09M Total Opportunity Is Calculated (engine-verified)", expanded=False):
+    with st.expander("📊 How Total Opportunity Is Calculated — $1.86M (conservative) / $2.09M (engine-strict)", expanded=False):
         st.markdown("""
         <div style='background:#0D2B1A;border-radius:6px;padding:16px 20px;margin-bottom:10px'>
           <div style='font-size:9px;letter-spacing:2px;color:#6B9E83;font-weight:700;margin-bottom:12px'>
@@ -1879,7 +1931,7 @@ def page_recovery():
             <div style='background:#1A3D2B;border-radius:4px;padding:12px 16px'>
               <div style='font-size:9px;color:#6B9E83;letter-spacing:1px;margin-bottom:6px'>COMPONENT 1 — BELOW-COST PRICING</div>
               <div style='font-size:22px;font-weight:700;color:#F59E0B'>$1,719,999</div>
-              <div style='font-size:11px;color:#A0C8B0;margin-top:4px'>All 30 customers priced below $0.284/pick.<br>
+              <div style='font-size:11px;color:#A0C8B0;margin-top:4px'>All 30 customers priced below $0.265/pick (conservative floor; engine-strict: $0.284/pick).<br>
                 Bravo ($337K) + Delta ($222K) + Charlie ($124K) + 27 others.</div>
               <div style='font-size:10px;color:#6B9E83;margin-top:6px'>Source: engine.below_cost_pricing() · HIGH confidence</div>
             </div>
@@ -2393,25 +2445,10 @@ def page_load_data():
                     </div>
                     """, unsafe_allow_html=True)
 
-                    # Quality log — engine returns a DataFrame with (sheet, message) cols
+                    # Quality log
                     if quality_df is not None and len(quality_df) > 0:
                         with st.expander(f"Data Quality Log ({len(quality_df)} items)"):
-                            for _, row in quality_df.iterrows():
-                                sheet = row.iloc[0] if len(row) > 0 else ""
-                                msg   = row.iloc[1] if len(row) > 1 else str(row)
-                                st.markdown(f"ℹ️ **{sheet}**: {msg}")
-
-                    # Top 10 customer profitability
-                    if prof_df is not None and len(prof_df) > 0:
-                        st.markdown("#### Per-Customer Profitability (Engine Output)")
-                        disp = prof_df.copy()
-                        # Format columns for display — engine uses revenue/profit/margin_pct
-                        for col in ["revenue", "labour_cost", "overhead", "total_cost", "profit", "mgmt_cost", "mgmt_profit"]:
-                            if col in disp.columns:
-                                disp[col] = disp[col].apply(lambda v: fmt_dollars(v))
-                        if "margin_pct" in disp.columns:
-                            disp["margin_pct"] = disp["margin_pct"].apply(lambda v: f"{v:.1f}%")
-                        st.dataframe(disp, use_container_width=True, hide_index=True)
+                            st.dataframe(quality_df, use_container_width=True, hide_index=True)
 
                 except Exception as e:
                     st.error(f"Engine error: {e}")
@@ -2422,36 +2459,21 @@ def page_load_data():
             st.markdown("""
             <div style='background:#1C2830;border:1px solid #2D3E4A;border-radius:4px;
                         padding:14px 18px;margin-top:8px'>
-              <div style='font-size:9px;letter-spacing:2px;color:#6B9E83;font-weight:700;margin-bottom:10px'>
-                ENGINE OUTPUT — PRE-COMPUTED (from Mattingly dataset, 13 Jun 2026)</div>
-              <div style='display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:12px'>
-                <div><div style='font-size:18px;font-weight:700;color:#EF4444'>$0.2844</div>
-                     <div style='font-size:10px;color:#A0C8B0'>True pick cost (labour)</div></div>
-                <div><div style='font-size:18px;font-weight:700;color:#EF4444'>$374,983</div>
-                     <div style='font-size:10px;color:#A0C8B0'>Unbilled leakage/yr</div></div>
-                <div><div style='font-size:18px;font-weight:700;color:#F59E0B'>$1,719,999</div>
-                     <div style='font-size:10px;color:#A0C8B0'>Below-cost pricing/yr</div></div>
-                <div><div style='font-size:18px;font-weight:700;color:#22C55E'>$2,094,982</div>
-                     <div style='font-size:10px;color:#A0C8B0'>Total opportunity</div></div>
-              </div>
-              <div style='margin-top:10px;padding-top:10px;border-top:1px solid #2D3E4A'>
-                <span style='font-size:10px;color:#5DBF8A;font-weight:600'>✅ SEASONALITY VERIFIED STABLE</span>
-                <span style='font-size:10px;color:#6B9E83'> · All customers M1/M2 ratio 0.84–1.18 · No seasonal adjustment needed</span>
+              <div style='font-size:9px;letter-spacing:2px;color:#6B9E83;font-weight:700;margin-bottom:8px'>
+                Upload the dataset above to run the live engine analysis.</div>
+              <div style='font-size:11px;color:#A0C8B0;line-height:1.6'>
+                Pre-computed results from 13 Jun 2026 are shown in the Recovery Tracker reconciliation panel.
               </div>
             </div>
             """, unsafe_allow_html=True)
 
-    # ── End Live Engine Analysis ───────────────────────────
     st.markdown("---")
-    st.markdown(sec("Actions"), unsafe_allow_html=True)
-
     col1, col2 = st.columns(2)
     with col1:
-        st.markdown("**Reload from findings.json**")
-        st.caption("Reimports the findings.json file and regenerates all tickets. Existing status updates will be lost.")
-        if st.button("Reload Findings", type="primary"):
+        st.markdown("**Reload Findings**")
+        st.caption("Re-imports findings.json and regenerates all tickets from the pre-built dataset.")
+        if st.button("Reload Findings"):
             try:
-                import sqlite3
                 conn = db.get_conn()
                 conn.execute("DELETE FROM tickets WHERE warehouse_id = ?", (WAREHOUSE_ID,))
                 conn.execute("DELETE FROM data_loaded WHERE warehouse_id = ?", (WAREHOUSE_ID,))
@@ -2459,7 +2481,7 @@ def page_load_data():
                 conn.close()
                 db.load_findings_json(DATA_PATH)
                 all_t = db.get_tickets(WAREHOUSE_ID)
-                st.success(f"Analysis complete — {len(all_t)} findings processed, {len(all_t)} tickets auto-generated and routed to role queues.")
+                st.success(f"Analysis complete \u2014 {len(all_t)} findings processed, {len(all_t)} tickets auto-generated and routed to role queues.")
                 st.rerun()
             except Exception as e:
                 st.error(f"Reload failed: {e}")
@@ -2486,7 +2508,7 @@ def page_load_data():
         all_t = db.get_tickets(WAREHOUSE_ID)
         if all_t:
             df = pd.DataFrame(all_t)[["id","title","customer","priority","finding_type","dollar_impact","status"]]
-            df["dollar_impact"] = df["dollar_impact"].apply(lambda v: fmt_dollars(v) if v > 0 else "—")
+            df["dollar_impact"] = df["dollar_impact"].apply(lambda v: fmt_dollars(v) if v > 0 else "\u2014")
             df.columns = ["ID","Title","Customer","Priority","Type","Impact","Status"]
             st.dataframe(df, use_container_width=True, hide_index=True)
         else:
@@ -2495,9 +2517,9 @@ def page_load_data():
         st.error(f"Error reading tickets: {e}")
 
 
-# ═══════════════════════════════════════════════════════════
+# \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 # ROUTER
-# ══════════════════════════════════════════════════════════
+# \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 PAGE_FN = {
     "Dashboard":              page_dashboard,
     "Customer Profitability": page_customer_profitability,
