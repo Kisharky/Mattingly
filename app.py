@@ -199,7 +199,8 @@ button, input, select, textarea, p, div, span, label {
     background-color: #1A3D2B !important;
     border-right: 1px solid #0D2619 !important;
 }
-[data-testid="stSidebar"] * { color: #C8DDD2 !important; }
+[data-testid="stSidebar"] *:not([data-testid="stSidebarCollapseButton"] *) { color: #C8DDD2 !important; }
+[data-testid="stSidebarCollapseButton"] span { font-size: 0 !important; }
 [data-testid="stSidebar"] .stSelectbox > div > div {
     background: rgba(255,255,255,0.07) !important;
     border-color: #2D5C42 !important;
@@ -391,7 +392,7 @@ hr { border-color: #E5E7EB !important; }
 st.markdown("""
 <div id="profit-lens-fab">
   <div class="fab-label">ASK PROFIT LENS</div>
-  <a href="/?open_chat=1" target="_self" style="all:unset;cursor:pointer;display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:#005A32;box-shadow:0 4px 20px rgba(0,90,50,0.45)">
+  <a href="/?open_chat=1" target="_top" style="all:unset;cursor:pointer;display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:#005A32;box-shadow:0 4px 20px rgba(0,90,50,0.45)">
     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
       <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="white"/>
       <circle cx="8" cy="11" r="1.2" fill="#005A32"/>
