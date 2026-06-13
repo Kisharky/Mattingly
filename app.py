@@ -2346,23 +2346,29 @@ def page_load_data():
                         tmp_path = tmp.name
 
                     result = _engine.run_all(tmp_path)
-                    hn = result["headline_numbers"]
-                    leakage = result.get("leakage", {})
-                    below = result.get("below_cost_pricing", {})
-                    qlog = result.get("quality_log", [])
+                    hn = result["headlines"]
+                    leak_by_cust = result.get("leakage_by_customer")
+                    below = result.get("below_cost")
+                    quality_df = result.get("quality")
                     prof_df = result.get("profitability")
+                    prod_df = result.get("productivity")
 
                     import os as _os
                     _os.unlink(tmp_path)
 
                     st.success("✅ Engine run complete — real data analysed")
 
-                    # Headline numbers
-                    pick_cost = hn.get("pick_cost_labour", 0)
-                    total_lkg  = hn.get("total_leakage_annual", 0)
-                    total_below = hn.get("below_cost_annual", 0)
-                    total_opp   = hn.get("total_opportunity_annual", 0)
-                    customers   = hn.get("customers_below_cost", 0)
+                    # Headline numbers — map from engine output
+                    # Get pick cost per unit from productivity table
+                    pick_cost = 0
+                    if prod_df is not None and len(prod_df) > 0:
+                        pick_row = prod_df[prod_df["Activity Type"] == "Pick"]
+                        if len(pick_row) > 0:
+                            pick_cost = pick_row.iloc[0]["cost_per_unit"]
+                    total_lkg   = hn.get("leakage_annual", 0)
+                    total_below = hn.get("pick_underpricing_annual", 0)
+                    total_opp   = hn.get("total_opportunity", 0)
+                    customers   = hn.get("unprofitable_customers", 0)
 
                     st.markdown("#### Engine Output — Headline Numbers")
                     h1, h2, h3, h4 = st.columns(4)
@@ -2387,24 +2393,24 @@ def page_load_data():
                     </div>
                     """, unsafe_allow_html=True)
 
-                    # Quality log
-                    if qlog:
-                        with st.expander(f"Data Quality Log ({len(qlog)} items)"):
-                            for entry in qlog:
-                                level = entry.get("level", "info")
-                                icon = "⚠️" if level == "warning" else "ℹ️"
-                                st.markdown(f"{icon} {entry.get('message', entry)}")
+                    # Quality log — engine returns a DataFrame with (sheet, message) cols
+                    if quality_df is not None and len(quality_df) > 0:
+                        with st.expander(f"Data Quality Log ({len(quality_df)} items)"):
+                            for _, row in quality_df.iterrows():
+                                sheet = row.iloc[0] if len(row) > 0 else ""
+                                msg   = row.iloc[1] if len(row) > 1 else str(row)
+                                st.markdown(f"ℹ️ **{sheet}**: {msg}")
 
                     # Top 10 customer profitability
                     if prof_df is not None and len(prof_df) > 0:
                         st.markdown("#### Per-Customer Profitability (Engine Output)")
                         disp = prof_df.copy()
-                        # Format columns for display
-                        for col in ["annual_revenue", "annual_cost", "annual_profit"]:
+                        # Format columns for display — engine uses revenue/profit/margin_pct
+                        for col in ["revenue", "labour_cost", "overhead", "total_cost", "profit", "mgmt_cost", "mgmt_profit"]:
                             if col in disp.columns:
                                 disp[col] = disp[col].apply(lambda v: fmt_dollars(v))
-                        if "true_margin_pct" in disp.columns:
-                            disp["true_margin_pct"] = disp["true_margin_pct"].apply(lambda v: f"{v:.1f}%")
+                        if "margin_pct" in disp.columns:
+                            disp["margin_pct"] = disp["margin_pct"].apply(lambda v: f"{v:.1f}%")
                         st.dataframe(disp, use_container_width=True, hide_index=True)
 
                 except Exception as e:
