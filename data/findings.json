@@ -1,0 +1,1441 @@
+{
+  "warehouse": {
+    "id": "WH001",
+    "name": "Warehouse 1",
+    "location": "National Network"
+  },
+  "summary": {
+    "total_exposure": 1860000,
+    "recovery_target": 1150000,
+    "pick_cost_floor": 0.265,
+    "pick_cost_strict": 0.284,
+    "analysis_period": "Jan\u2013Feb 2026",
+    "generated_date": "2026-06-01"
+  },
+  "findings": [
+    {
+      "id": "F001",
+      "type": "pricing_leakage",
+      "title": "Bravo FMCG \u2014 Pick Rate Below Cost",
+      "customer": "Bravo FMCG",
+      "customer_id": "C002",
+      "priority": "HIGH",
+      "suggested_owner": "Commercial Lead",
+      "dollar_impact": 144000,
+      "full_exposure": 297863,
+      "current_rate": 0.12,
+      "proposed_rate": 0.19,
+      "true_cost": 0.265,
+      "description": "Bravo FMCG pays $0.12/pick against a true labour cost of $0.265. With 2,055,330 picks/yr this creates a $298K annual subsidy. A half-step to $0.19 recovers $144K/yr while keeping Bravo profitable at 33% margin. Win-either-way: if they accept we recover $144K; if they leave we stop a $298K subsidy.",
+      "ai_explanation": "Bravo FMCG is the most actionable opportunity in the building. They have 2 million picks per year at 12 cents each \u2014 but every pick costs us 26.5 cents to perform. Moving their rate to 19 cents recovers $144,000 per year with a single negotiation. At 19 cents, Bravo still earns a healthy 33% margin \u2014 they have no reason to leave. If they do walk, we stop a $298K annual subsidy. This is the Month 1 pilot that proves the system works.",
+      "action": "Initiate repricing negotiation with Bravo FMCG. Present the activity cost data. Propose $0.19/pick as a fair halfway step. Target: signed by end of Month 1.",
+      "tags": [
+        "Scale Without Return"
+      ]
+    },
+    {
+      "id": "F002",
+      "type": "pricing_leakage",
+      "title": "Delta Manufacturing \u2014 Pick Rate Below Cost",
+      "customer": "Delta Manufacturing",
+      "customer_id": "C004",
+      "priority": "HIGH",
+      "suggested_owner": "Commercial Lead",
+      "dollar_impact": 198000,
+      "full_exposure": 198000,
+      "current_rate": 0.14,
+      "proposed_rate": 0.2,
+      "true_cost": 0.265,
+      "description": "Delta Manufacturing pays $0.14/pick against true cost $0.265. True margin 16.8% vs reported ~96%. Complex conversation \u2014 Delta also has significant unbilled work (see F004). Sequence after Bravo pilot.",
+      "ai_explanation": "Delta Manufacturing has a double problem: their pick rate is below cost AND they have significant unbilled work. The repricing conversation here is more complex than Bravo \u2014 we need the Bravo outcome as proven cost evidence before approaching Delta. Sequence this after the Month 1 pilot. The unbilled work case (F004) may actually be the better opening for the Delta conversation.",
+      "action": "Sequence after Bravo pilot closes. Use Bravo outcome as cost evidence credibility. Prepare activity data pack for Delta repricing meeting in Month 3."
+    },
+    {
+      "id": "F003",
+      "type": "pricing_leakage",
+      "title": "Charlie Medical \u2014 Pick Rate Below Cost",
+      "customer": "Charlie Medical",
+      "customer_id": "C003",
+      "priority": "MEDIUM",
+      "suggested_owner": "Commercial Lead",
+      "dollar_impact": 102000,
+      "full_exposure": 102000,
+      "current_rate": 0.15,
+      "proposed_rate": 0.21,
+      "true_cost": 0.265,
+      "description": "Charlie Medical pays $0.15/pick. True margin 38.9% vs reported ~96%. Handle unbilled work re-billing (F005) first, then revisit pick rate. Medical sector relationship requires careful approach.",
+      "ai_explanation": "Charlie Medical operates at a better margin than Delta or Bravo, but still below what the reports show. Their more urgent issue is the $127K of unbilled work \u2014 lead with that conversation first. Use the re-billing resolution to build trust, then raise the pick rate in a Month 3 discussion.",
+      "action": "Address unbilled work (F005) first. Then initiate pick rate repricing discussion in Month 3, using re-billing outcome to establish commercial credibility."
+    },
+    {
+      "id": "F004",
+      "type": "unbilled_work",
+      "title": "Delta Manufacturing \u2014 Unbilled Exceptions",
+      "customer": "Delta Manufacturing",
+      "customer_id": "C004",
+      "priority": "HIGH",
+      "suggested_owner": "Commercial Lead",
+      "dollar_impact": 147283,
+      "full_exposure": 147283,
+      "current_rate": null,
+      "proposed_rate": null,
+      "true_cost": null,
+      "description": "5,340 returns performed vs 4,112 billed; 2,883 rework vs 2,221 billed; 2,378 urgent orders vs 1,801 billed. $147,283/yr of work done but never invoiced. Client exception log confirms unusual volumes at Delta.",
+      "ai_explanation": "Delta Manufacturing generated 5,340 product returns in two months \u2014 but we only billed 4,112. The same gap exists in rework and urgent orders. This is $147,000 per year of real work that our team performs and nobody charges for. Present the activity vs billing data to Delta, identify the contract clause that covers exception billing, and initiate formal re-billing.",
+      "action": "Extract activity vs billing discrepancy by exception type. Identify relevant contract clause. Present evidence to Delta commercial contact. Initiate re-billing for Month 1\u20132 unbilled work."
+    },
+    {
+      "id": "F005",
+      "type": "unbilled_work",
+      "title": "Charlie Medical \u2014 Unbilled Picks and Dispatches",
+      "customer": "Charlie Medical",
+      "customer_id": "C003",
+      "priority": "HIGH",
+      "suggested_owner": "Commercial Lead",
+      "dollar_impact": 126962,
+      "full_exposure": 126962,
+      "current_rate": null,
+      "proposed_rate": null,
+      "true_cost": null,
+      "description": "165K picks performed vs 133K billed; 17,800 dispatches vs 14,400 billed. $126,962/yr unbilled. Client's own exception log flags Charlie as 'Possible Unrecovered Activity' \u2014 independent corroboration.",
+      "ai_explanation": "Charlie Medical's case is unusual because the client already suspected something was wrong \u2014 their internal exception log flags Charlie as 'Possible Unrecovered Activity.' We've now quantified it: $127,000 per year. The fact that the client's own system pointed at Charlie and our independent analysis confirmed it is powerful credibility for the re-billing conversation. Lead with that.",
+      "action": "Prepare billing discrepancy report. Reference client's own exception flag as corroboration. Present to Charlie Medical commercial contact. Initiate formal re-billing process.",
+      "tags": [
+        "Recurring Daily"
+      ],
+      "recurrence": "daily"
+    },
+    {
+      "id": "F006",
+      "type": "data_hygiene",
+      "title": "Week 1 \u2014 Validate Findings vs 12-Month History",
+      "customer": "All Customers",
+      "customer_id": "ALL",
+      "priority": "HIGH",
+      "suggested_owner": "Site Manager",
+      "dollar_impact": 0,
+      "full_exposure": 0,
+      "current_rate": null,
+      "proposed_rate": null,
+      "true_cost": null,
+      "description": "Seasonality has been verified STABLE: all 30 customers show M1/M2 ratio 0.84\u20131.18, confirming the 2-month data is representative. Primary task remaining: validate against 12-month WMS history and confirm labour data gap (4 missing days) does not skew annualisation by more than \u00b15%.",
+      "ai_explanation": "The entire Profit Lens analysis is based on two months of data. Before we approach any customer for repricing, we need to confirm these two months are representative. If there is seasonal volume variation, the annualised numbers could move. This validation takes one week and either confirms the findings \u2014 or tells us to adjust the scale. Either way, it makes every repricing conversation more defensible.",
+      "action": "Pull 12-month revenue history from finance system. Compare Jan\u2013Feb volumes against annual average. Flag any seasonal patterns by customer. Confirm or adjust annualisation factor. Report to Commercial Lead."
+    },
+    {
+      "id": "F007",
+      "type": "data_hygiene",
+      "title": "Week 1 \u2014 Close Labour Data Gap (4 Missing Days)",
+      "customer": "All Customers",
+      "customer_id": "ALL",
+      "priority": "HIGH",
+      "suggested_owner": "Site Manager",
+      "dollar_impact": 0,
+      "full_exposure": 0,
+      "current_rate": null,
+      "proposed_rate": null,
+      "true_cost": null,
+      "description": "4 days of pick labour records show 'Missing time and attendance record' \u2014 no cost assigned. Conservative treatment gives $0.265/pick floor; strict treatment gives $0.284/pick. Gap must be closed before next analysis cycle.",
+      "ai_explanation": "We used $0.265 as the conservative pick cost \u2014 this treats those 4 missing days as if labour was free, making the average look lower. The strict figure is $0.284. At $0.284, the annual pick loss grows to $1.60M. Either number still means every customer is being undercharged. This task closes the gap so the next monthly analysis has no missing data.",
+      "action": "Identify the 4 dates with missing time-and-attendance records. Retrieve actual cost data from payroll system. Update Labour sheet. Re-run pick cost calculation and confirm floor vs strict figures."
+    },
+    {
+      "id": "F010",
+      "type": "productivity_opportunity",
+      "title": "Delta Manufacturing \u2014 Exception Rate 2.4\u00d7 Network Average",
+      "customer": "Delta Manufacturing",
+      "customer_id": "C004",
+      "priority": "MEDIUM",
+      "suggested_owner": "Site Manager",
+      "dollar_impact": 62000,
+      "full_exposure": 62000,
+      "description": "Delta's exception rate is 14.1% of volume vs network average 5.8%. The gap (8.3 percentage points) represents avoidable labour cost. If Delta's rate moved to network average, labour absorption improves by ~$62K/yr.",
+      "ai_explanation": "Delta Manufacturing generates far more exceptions than any comparable customer. Returns, rework, and urgent orders at Delta consume labour that isn't recovered through billing. The root cause is unknown \u2014 it could be their ordering pattern, product handling, our slotting, or a process failure on our side. A 2-week floor analysis will identify the cause and the fix. If we can bring Delta's exception rate to network average, labour cost drops by ~$62K/yr without any pricing change.",
+      "action": "Complete floor analysis (F008 must close first). Identify top 3 root causes. Design operational fix \u2014 slotting change, inbound quality check, or SLA clause. Target: exception rate below 8% by Month 4."
+    },
+    {
+      "id": "F011",
+      "type": "pricing_leakage",
+      "title": "Network \u2014 All Pick Rates Below True Cost (Structural Pricing Defect)",
+      "customer": "All Customers",
+      "customer_id": "ALL",
+      "priority": "HIGH",
+      "suggested_owner": "Commercial Lead",
+      "dollar_impact": 1490000,
+      "full_exposure": 1490000,
+      "description": "All 30 customers are priced below the true pick cost of $0.265/pick (conservative floor). Total pricing leakage: $1.49M/yr at the conservative rate, $1.72M/yr at engine-strict $0.284/pick. This is the structural parent finding \u2014 F001 (Bravo $144K), F002 (Delta $198K), and F003 (Charlie $102K) are named sub-findings within this total; summing them with F011 would double-count. Additional unbilled leakage: $374,983/yr total \u2014 Delta $147K + Charlie $127K + other customers $101K.",
+      "ai_explanation": "The root problem is not any single customer's rate. It is the pricing model itself. A flat per-pick rate penalises the business on high-volume, high-complexity customers and gives the same cost to low-volume, simple customers. The right long-term fix is service tiers: a base rate plus complexity and volume factors. The pilot repricing (Bravo) buys the credibility to have that structural conversation in Month 3.",
+      "action": "After Bravo pilot closes: design tiered pricing model (base + complexity multiplier + volume bracket). Present to CEO in Month 3. Implement in Month 4\u20136 as contract renewals occur.",
+      "is_structural": true
+    },
+    {
+      "id": "F013",
+      "type": "commercial_opportunity",
+      "title": "C026 Home & Living Products \u2014 Underutilised Fixed-Fee Account",
+      "customer": "Home & Living Products",
+      "customer_id": "C026",
+      "priority": "MEDIUM",
+      "suggested_owner": "Commercial Lead",
+      "dollar_impact": 276000,
+      "full_exposure": 276000,
+      "tags": [
+        "Underutilised Account",
+        "Fixed Fee"
+      ],
+      "current_rate": null,
+      "proposed_rate": null,
+      "true_cost": null,
+      "description": "Home & Living Products pays a fixed monthly fee of $45,000 ($540K/yr) but utilises only 47% of allocated warehouse capacity. Actual activity equivalent is ~$21K/month. The unused 53% capacity (worth ~$23K/month, $276K/yr) could be reallocated to high-volume customers or used to onboard new accounts. Alternatively, commercial team should review whether the fixed fee reflects the actual service floor.",
+      "ai_explanation": "Home & Living Products has a fixed-fee arrangement \u2014 they pay the same amount regardless of how much they use. Right now they are using less than half of what they pay for. This is actually a good thing for margin (we collect $45K/month for $21K of activity), but the unused capacity is opportunity cost: that space and labour headroom could serve a new customer paying variable rates. The sales team should either grow Home & Living Products' volume to fill their allocation, or we should consider redeploying that capacity to higher-value use.",
+      "action": "Sales team to review Home & Living Products growth potential \u2014 can they increase volume to fill allocated capacity? If not, identify alternative customers to absorb the 53% gap. Operations to flag the capacity surplus in the monthly utilisation report."
+    }
+  ],
+  "customer_profiles": [
+    {
+      "id": "C004",
+      "name": "Delta Manufacturing",
+      "industry": "Industrial",
+      "contract_type": "Hybrid",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 19.5,
+      "annual_revenue": 1821035,
+      "annual_true_cost": 1466364,
+      "annual_profit": 354671,
+      "annual_picks": 1440450,
+      "pick_rate_charged": 0.13,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 147283,
+      "exception_rate_pct": 0.6,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -222433,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -147283,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -117309,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "REPRICE",
+      "recommendation_note": "Critical \u2014 19% true margin. Immediate repricing required.",
+      "flag": "HIGH",
+      "tags": [
+        "Operational Complexity",
+        "Revenue Leakage"
+      ]
+    },
+    {
+      "id": "C002",
+      "name": "Bravo FMCG",
+      "industry": "FMCG",
+      "contract_type": "Activity Based",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 29.1,
+      "annual_revenue": 2229913,
+      "annual_true_cost": 1581211,
+      "annual_profit": 648702,
+      "annual_picks": 2055330,
+      "pick_rate_charged": 0.12,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 5986,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -337941,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -5986,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -126497,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "REBILL",
+      "recommendation_note": "Unbilled work detected ($5,986/yr). Rebill + reprice.",
+      "flag": "HIGH",
+      "tags": [
+        "Scale Without Return"
+      ]
+    },
+    {
+      "id": "C003",
+      "name": "Charlie Medical",
+      "industry": "Healthcare",
+      "contract_type": "Activity Based",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 39.9,
+      "annual_revenue": 1252570,
+      "annual_true_cost": 753201,
+      "annual_profit": 499369,
+      "annual_picks": 992934,
+      "pick_rate_charged": 0.16,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 126962,
+      "exception_rate_pct": 21.7,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -123540,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -126962,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -60256,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "REBILL",
+      "recommendation_note": "Unbilled work detected ($126,962/yr). Rebill + reprice.",
+      "flag": "HIGH",
+      "tags": [
+        "Revenue Leakage",
+        "High Exception Rate"
+      ]
+    },
+    {
+      "id": "C020",
+      "name": "Family Pantry Foods",
+      "industry": "FMCG",
+      "contract_type": "Fixed Monthly",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 63.5,
+      "annual_revenue": 1120269,
+      "annual_true_cost": 409284,
+      "annual_profit": 710985,
+      "annual_picks": 275178,
+      "pick_rate_charged": 0.13,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 2040,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -42493,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -2040,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -32743,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "OPPORTUNITY",
+      "recommendation_note": "Fixed-fee contract. Review capacity utilisation and grow account or redeploy.",
+      "flag": "MEDIUM",
+      "tags": [
+        "Fixed Fee Risk",
+        "Fixed Fee"
+      ]
+    },
+    {
+      "id": "C010",
+      "name": "Southern Manufacturing Services",
+      "industry": "Industrial",
+      "contract_type": "Fixed Monthly",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 64.1,
+      "annual_revenue": 1087575,
+      "annual_true_cost": 390663,
+      "annual_profit": 696912,
+      "annual_picks": 286758,
+      "pick_rate_charged": 0.13,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 4910,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -44281,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -4910,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -31253,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "OPPORTUNITY",
+      "recommendation_note": "Fixed-fee contract. Review capacity utilisation and grow account or redeploy.",
+      "flag": "MEDIUM",
+      "tags": [
+        "Stable Performer",
+        "Fixed Fee"
+      ]
+    },
+    {
+      "id": "C028",
+      "name": "Australian Medical Logistics",
+      "industry": "Healthcare",
+      "contract_type": "Hybrid",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 64.8,
+      "annual_revenue": 1133550,
+      "annual_true_cost": 399328,
+      "annual_profit": 734223,
+      "annual_picks": 289680,
+      "pick_rate_charged": 0.16,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 5753,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -36042,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -5753,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -31946,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "MONITOR",
+      "recommendation_note": "Below true cost but lower priority at 65% margin. Wave 3 repricing.",
+      "flag": "LOW",
+      "tags": [
+        "Service Intensive"
+      ]
+    },
+    {
+      "id": "C006",
+      "name": "Medisupply Australia",
+      "industry": "Healthcare",
+      "contract_type": "Hybrid",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 64.8,
+      "annual_revenue": 1048406,
+      "annual_true_cost": 369128,
+      "annual_profit": 679278,
+      "annual_picks": 278154,
+      "pick_rate_charged": 0.17,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 845,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -31826,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -845,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -29530,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "MONITOR",
+      "recommendation_note": "Below true cost but lower priority at 65% margin. Wave 3 repricing.",
+      "flag": "LOW",
+      "tags": [
+        "Stable Performer"
+      ]
+    },
+    {
+      "id": "C018",
+      "name": "Pacific Healthcare Products",
+      "industry": "Healthcare",
+      "contract_type": "Storage Heavy",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 64.9,
+      "annual_revenue": 1149156,
+      "annual_true_cost": 403839,
+      "annual_profit": 745316,
+      "annual_picks": 328860,
+      "pick_rate_charged": 0.16,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 11015,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -40916,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -11015,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -32307,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "MONITOR",
+      "recommendation_note": "Below true cost but lower priority at 65% margin. Wave 3 repricing.",
+      "flag": "LOW",
+      "tags": [
+        "Space Inefficient",
+        "Revenue Leakage"
+      ]
+    },
+    {
+      "id": "C019",
+      "name": "Urban Retail Group",
+      "industry": "Retail",
+      "contract_type": "Hybrid",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 65.7,
+      "annual_revenue": 1172357,
+      "annual_true_cost": 402029,
+      "annual_profit": 770329,
+      "annual_picks": 314814,
+      "pick_rate_charged": 0.13,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 1727,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -48613,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -1727,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -32162,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "MONITOR",
+      "recommendation_note": "Below true cost but lower priority at 66% margin. Wave 3 repricing.",
+      "flag": "LOW",
+      "tags": [
+        "Stable Performer"
+      ]
+    },
+    {
+      "id": "C029",
+      "name": "Allied Healthcare Products",
+      "industry": "Healthcare",
+      "contract_type": "Activity Based",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 65.7,
+      "annual_revenue": 1155627,
+      "annual_true_cost": 395886,
+      "annual_profit": 759741,
+      "annual_picks": 297402,
+      "pick_rate_charged": 0.16,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 2913,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -37002,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -2913,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -31671,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "MONITOR",
+      "recommendation_note": "Below true cost but lower priority at 66% margin. Wave 3 repricing.",
+      "flag": "LOW",
+      "tags": [
+        "Margin Expansion Opportunity"
+      ]
+    },
+    {
+      "id": "C017",
+      "name": "Harvest Consumer Brands",
+      "industry": "FMCG",
+      "contract_type": "Activity Based",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 65.9,
+      "annual_revenue": 1180975,
+      "annual_true_cost": 402767,
+      "annual_profit": 778208,
+      "annual_picks": 332496,
+      "pick_rate_charged": 0.15,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 2019,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -44694,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -2019,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -32221,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "MONITOR",
+      "recommendation_note": "Below true cost but lower priority at 66% margin. Wave 3 repricing.",
+      "flag": "LOW",
+      "tags": [
+        "Stable Performer"
+      ]
+    },
+    {
+      "id": "C007",
+      "name": "Precision Industrial Group",
+      "industry": "Industrial",
+      "contract_type": "Hybrid",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 66.0,
+      "annual_revenue": 1074275,
+      "annual_true_cost": 365190,
+      "annual_profit": 709085,
+      "annual_picks": 288018,
+      "pick_rate_charged": 0.14,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 359,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -41595,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -359,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -29215,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "MONITOR",
+      "recommendation_note": "Below true cost but lower priority at 66% margin. Wave 3 repricing.",
+      "flag": "LOW",
+      "tags": [
+        "Stable Performer"
+      ]
+    },
+    {
+      "id": "C021",
+      "name": "Southern Beverage Company",
+      "industry": "FMCG",
+      "contract_type": "Hybrid",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 66.0,
+      "annual_revenue": 1084772,
+      "annual_true_cost": 368620,
+      "annual_profit": 716152,
+      "annual_picks": 304452,
+      "pick_rate_charged": 0.16,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 4004,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -37880,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -4004,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -29490,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "MONITOR",
+      "recommendation_note": "Below true cost but lower priority at 66% margin. Wave 3 repricing.",
+      "flag": "LOW",
+      "tags": [
+        "Seasonal Volatility"
+      ]
+    },
+    {
+      "id": "C008",
+      "name": "National Wholesale Distributor",
+      "industry": "Wholesale",
+      "contract_type": "Activity Based",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 66.1,
+      "annual_revenue": 1161307,
+      "annual_true_cost": 393450,
+      "annual_profit": 767857,
+      "annual_picks": 312150,
+      "pick_rate_charged": 0.16,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 3776,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -38837,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -3776,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -31476,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "MONITOR",
+      "recommendation_note": "Below true cost but lower priority at 66% margin. Wave 3 repricing.",
+      "flag": "LOW",
+      "tags": [
+        "Stable Performer"
+      ]
+    },
+    {
+      "id": "C024",
+      "name": "Lifestyle Brands Australia",
+      "industry": "Consumer Goods",
+      "contract_type": "Activity Based",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 66.2,
+      "annual_revenue": 1143031,
+      "annual_true_cost": 386585,
+      "annual_profit": 756446,
+      "annual_picks": 297408,
+      "pick_rate_charged": 0.16,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 950,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -37003,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -950,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -30927,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "MONITOR",
+      "recommendation_note": "Below true cost but lower priority at 66% margin. Wave 3 repricing.",
+      "flag": "LOW",
+      "tags": [
+        "Margin Expansion Opportunity"
+      ]
+    },
+    {
+      "id": "C015",
+      "name": "Apex Industrial Solutions",
+      "industry": "Industrial",
+      "contract_type": "Fixed Monthly",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 66.5,
+      "annual_revenue": 1186874,
+      "annual_true_cost": 398190,
+      "annual_profit": 788684,
+      "annual_picks": 300468,
+      "pick_rate_charged": 0.16,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 2249,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -37384,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -2249,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -31855,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "OPPORTUNITY",
+      "recommendation_note": "Fixed-fee contract. Review capacity utilisation and grow account or redeploy.",
+      "flag": "MEDIUM",
+      "tags": [
+        "Stable Performer",
+        "Fixed Fee"
+      ]
+    },
+    {
+      "id": "C027",
+      "name": "HealthFirst Supplies",
+      "industry": "Healthcare",
+      "contract_type": "Activity Based",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 66.9,
+      "annual_revenue": 1223152,
+      "annual_true_cost": 405025,
+      "annual_profit": 818127,
+      "annual_picks": 300084,
+      "pick_rate_charged": 0.16,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 2002,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -37336,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -2002,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -32402,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "MONITOR",
+      "recommendation_note": "Below true cost but lower priority at 67% margin. Wave 3 repricing.",
+      "flag": "LOW",
+      "tags": [
+        "Activity Intensive"
+      ]
+    },
+    {
+      "id": "C023",
+      "name": "Fresh Harvest Products",
+      "industry": "FMCG",
+      "contract_type": "Fixed Monthly",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 66.9,
+      "annual_revenue": 1177991,
+      "annual_true_cost": 390011,
+      "annual_profit": 787980,
+      "annual_picks": 297216,
+      "pick_rate_charged": 0.13,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 2471,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -45896,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -2471,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -31201,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "OPPORTUNITY",
+      "recommendation_note": "Fixed-fee contract. Review capacity utilisation and grow account or redeploy.",
+      "flag": "MEDIUM",
+      "tags": [
+        "Fixed Fee Risk",
+        "Fixed Fee"
+      ]
+    },
+    {
+      "id": "C025",
+      "name": "MediCare Distribution Services",
+      "industry": "Healthcare",
+      "contract_type": "Fixed Monthly",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 67.1,
+      "annual_revenue": 1216442,
+      "annual_true_cost": 400189,
+      "annual_profit": 816254,
+      "annual_picks": 290484,
+      "pick_rate_charged": 0.15,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 5826,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -39047,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -5826,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -32015,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "OPPORTUNITY",
+      "recommendation_note": "Fixed-fee contract. Review capacity utilisation and grow account or redeploy.",
+      "flag": "MEDIUM",
+      "tags": [
+        "Stable Performer",
+        "Fixed Fee"
+      ]
+    },
+    {
+      "id": "C009",
+      "name": "BrightHome Products",
+      "industry": "Consumer Goods",
+      "contract_type": "Activity Based",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 67.8,
+      "annual_revenue": 1232320,
+      "annual_true_cost": 397266,
+      "annual_profit": 835054,
+      "annual_picks": 287760,
+      "pick_rate_charged": 0.14,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 2921,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -41558,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -2921,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -31781,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "MONITOR",
+      "recommendation_note": "Below true cost but lower priority at 68% margin. Wave 3 repricing.",
+      "flag": "LOW",
+      "tags": [
+        "Stable Performer"
+      ]
+    },
+    {
+      "id": "C011",
+      "name": "FreshChoice Foods",
+      "industry": "FMCG",
+      "contract_type": "Hybrid",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 68.0,
+      "annual_revenue": 1215279,
+      "annual_true_cost": 388519,
+      "annual_profit": 826760,
+      "annual_picks": 295818,
+      "pick_rate_charged": 0.15,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 9115,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -39764,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -9115,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -31082,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "MONITOR",
+      "recommendation_note": "Below true cost but lower priority at 68% margin. Wave 3 repricing.",
+      "flag": "LOW",
+      "tags": [
+        "Stable Performer"
+      ]
+    },
+    {
+      "id": "C016",
+      "name": "Prime Foods Australia",
+      "industry": "FMCG",
+      "contract_type": "Storage Heavy",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 69.6,
+      "annual_revenue": 1316933,
+      "annual_true_cost": 400183,
+      "annual_profit": 916750,
+      "annual_picks": 289644,
+      "pick_rate_charged": 0.17,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 2872,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -33141,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -2872,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -32015,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "MONITOR",
+      "recommendation_note": "Below true cost but lower priority at 70% margin. Wave 3 repricing.",
+      "flag": "LOW",
+      "tags": [
+        "Storage Intensive"
+      ]
+    },
+    {
+      "id": "C022",
+      "name": "National Grocery Brands",
+      "industry": "FMCG",
+      "contract_type": "Activity Based",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 69.9,
+      "annual_revenue": 1340731,
+      "annual_true_cost": 404214,
+      "annual_profit": 936517,
+      "annual_picks": 287910,
+      "pick_rate_charged": 0.16,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 1531,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -35821,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -1531,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -32337,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "MONITOR",
+      "recommendation_note": "Below true cost but lower priority at 70% margin. Wave 3 repricing.",
+      "flag": "LOW",
+      "tags": [
+        "Activity Intensive"
+      ]
+    },
+    {
+      "id": "C014",
+      "name": "CarePlus Medical Supplies",
+      "industry": "Healthcare",
+      "contract_type": "Fixed Monthly",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 70.0,
+      "annual_revenue": 1239768,
+      "annual_true_cost": 372397,
+      "annual_profit": 867371,
+      "annual_picks": 285036,
+      "pick_rate_charged": 0.14,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 2625,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -41165,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -2625,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -29792,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "OPPORTUNITY",
+      "recommendation_note": "Fixed-fee contract. Review capacity utilisation and grow account or redeploy.",
+      "flag": "MEDIUM",
+      "tags": [
+        "Stable Performer",
+        "Fixed Fee"
+      ]
+    },
+    {
+      "id": "C030",
+      "name": "Daily Choice Foods",
+      "industry": "FMCG",
+      "contract_type": "Hybrid",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 70.3,
+      "annual_revenue": 1370236,
+      "annual_true_cost": 406400,
+      "annual_profit": 963836,
+      "annual_picks": 308784,
+      "pick_rate_charged": 0.14,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 1791,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -44594,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -1791,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -32512,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "MONITOR",
+      "recommendation_note": "Below true cost but lower priority at 70% margin. Wave 3 repricing.",
+      "flag": "LOW",
+      "tags": [
+        "Stable Performer"
+      ]
+    },
+    {
+      "id": "C026",
+      "name": "Home & Living Products",
+      "industry": "Consumer Goods",
+      "contract_type": "Fixed Monthly",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 70.5,
+      "annual_revenue": 1259008,
+      "annual_true_cost": 371452,
+      "annual_profit": 887555,
+      "annual_picks": 246804,
+      "pick_rate_charged": 0.14,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 1901,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -35643,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -1901,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -29716,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "OPPORTUNITY",
+      "recommendation_note": "Fixed-fee contract. Review capacity utilisation and grow account or redeploy.",
+      "flag": "MEDIUM",
+      "tags": [
+        "Underutilised Account",
+        "Fixed Fee"
+      ]
+    },
+    {
+      "id": "C012",
+      "name": "Retail Hub Australia",
+      "industry": "Retail",
+      "contract_type": "Hybrid",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 71.2,
+      "annual_revenue": 1328524,
+      "annual_true_cost": 382953,
+      "annual_profit": 945571,
+      "annual_picks": 313776,
+      "pick_rate_charged": 0.13,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 6302,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -48453,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -6302,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -30636,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "MONITOR",
+      "recommendation_note": "Below true cost but lower priority at 71% margin. Wave 3 repricing.",
+      "flag": "LOW",
+      "tags": [
+        "Stable Performer"
+      ]
+    },
+    {
+      "id": "C013",
+      "name": "Everyday Essentials Co",
+      "industry": "Consumer Goods",
+      "contract_type": "Hybrid",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 72.4,
+      "annual_revenue": 1312038,
+      "annual_true_cost": 362170,
+      "annual_profit": 949867,
+      "annual_picks": 270108,
+      "pick_rate_charged": 0.14,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 1533,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -39009,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -1533,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -28974,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "MONITOR",
+      "recommendation_note": "Below true cost but lower priority at 72% margin. Wave 3 repricing.",
+      "flag": "LOW",
+      "tags": [
+        "Stable Performer"
+      ]
+    },
+    {
+      "id": "C001",
+      "name": "Alpha Retail",
+      "industry": "Retail",
+      "contract_type": "Activity Based",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 90.3,
+      "annual_revenue": 2716943,
+      "annual_true_cost": 263629,
+      "annual_profit": 2453315,
+      "annual_picks": 214350,
+      "pick_rate_charged": 0.17,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 10634,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -24526,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -10634,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -21090,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "MONITOR",
+      "recommendation_note": "Below true cost but lower priority at 90% margin. Wave 3 repricing.",
+      "flag": "LOW",
+      "tags": [
+        "Strategic Account",
+        "Revenue Leakage"
+      ]
+    },
+    {
+      "id": "C005",
+      "name": "Echo Imports",
+      "industry": "Consumer Goods",
+      "contract_type": "Storage Heavy",
+      "reported_margin_pct": 96.3,
+      "true_margin_pct": 95.7,
+      "annual_revenue": 5350306,
+      "annual_true_cost": 232698,
+      "annual_profit": 5117608,
+      "annual_picks": 101154,
+      "pick_rate_charged": 0.17,
+      "pick_rate_cost": 0.2844,
+      "unbilled_annual": 666,
+      "exception_rate_pct": 0.0,
+      "network_avg_exception_pct": 5.8,
+      "profitability_drivers": [
+        {
+          "driver": "Below-cost pick rate",
+          "impact": -11574,
+          "type": "pricing"
+        },
+        {
+          "driver": "Unbilled work (leakage)",
+          "impact": -666,
+          "type": "leakage"
+        },
+        {
+          "driver": "Overhead allocation",
+          "impact": -18616,
+          "type": "overhead"
+        }
+      ],
+      "recommendation": "MONITOR",
+      "recommendation_note": "Below true cost but lower priority at 96% margin. Wave 3 repricing.",
+      "flag": "LOW",
+      "tags": [
+        "Stable Performer"
+      ]
+    }
+  ],
+  "network_summary": {
+    "total_customers": 30,
+    "customers_below_cost": 30,
+    "network_avg_exception_pct": 5.8,
+    "pick_cost_floor": 0.265,
+    "pick_cost_strict": 0.284,
+    "monthly_exposure": 155000,
+    "recovery_milestones": [
+      {
+        "month": 1,
+        "action": "Bravo repricing signed",
+        "cumulative": 144000
+      },
+      {
+        "month": 2,
+        "action": "Delta/Charlie re-billing initiated",
+        "cumulative": 144000
+      },
+      {
+        "month": 3,
+        "action": "Scale repricing + re-billing confirmed",
+        "cumulative": 560000
+      },
+      {
+        "month": 6,
+        "action": "Sites 2\u20133 onboarded",
+        "cumulative": 850000
+      },
+      {
+        "month": 9,
+        "action": "Full network live",
+        "cumulative": 1150000
+      }
+    ]
+  }
+}

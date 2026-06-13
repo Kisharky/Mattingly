@@ -1,0 +1,5 @@
+﻿profit_lens.db
+__pycache__/
+*.pyc
+.env
+*.db-journal
