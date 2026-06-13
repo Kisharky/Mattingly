@@ -336,37 +336,58 @@ hr { border-color: #E5E7EB !important; }
 .stError { background: #FEE2E2 !important; border-color: #991B1B44 !important; }
 
 /* ── Floating chathead ── */
-#profit-lens-fab {
+div[data-testid="stVerticalBlock"]:has(#fab-anchor) {
     position: fixed;
     bottom: 28px;
     right: 28px;
-    z-index: 99999;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px;
-    pointer-events: none;
+    z-index: 100000;
+    width: 56px;
+    height: 56px;
 }
-#profit-lens-fab a, #profit-lens-fab button {
+div[data-testid="stVerticalBlock"]:has(#fab-anchor) button {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    opacity: 0;
+    z-index: 2;
+    cursor: pointer;
+}
+#profit-lens-fab {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 56px;
+    height: 56px;
+    pointer-events: none;
+    z-index: 1;
+}
+.fab-visual-btn {
     width: 56px;
     height: 56px;
     border-radius: 50%;
     background: #005A32;
     box-shadow: 0 4px 20px rgba(0,90,50,0.45);
-    cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
     transition: transform 0.15s ease, box-shadow 0.15s ease;
-    pointer-events: all;
-    border: none;
-    padding: 0;
 }
-#profit-lens-fab a:hover, #profit-lens-fab button:hover {
+div[data-testid="stVerticalBlock"]:has(#fab-anchor):hover .fab-visual-btn {
     transform: scale(1.08);
     box-shadow: 0 6px 28px rgba(0,90,50,0.55);
 }
-#profit-lens-fab .fab-label {
+div[data-testid="stVerticalBlock"]:has(#fab-anchor):hover .fab-label {
+    opacity: 1;
+    transform: translateY(-50%) translateY(0);
+}
+.fab-label {
+    position: absolute;
+    right: 70px;
+    top: 50%;
+    transform: translateY(-50%) translateY(4px);
     background: #003D22;
     color: #A8D5B5;
     font-size: 10px;
@@ -375,32 +396,31 @@ hr { border-color: #E5E7EB !important; }
     padding: 4px 12px;
     border-radius: 12px;
     white-space: nowrap;
-    pointer-events: none;
     opacity: 0;
-    transform: translateY(4px);
     transition: opacity 0.15s ease, transform 0.15s ease;
-}
-#profit-lens-fab:hover .fab-label {
-    opacity: 1;
-    transform: translateY(0);
 }
 </style>
 """, unsafe_allow_html=True)
 
 # ── FLOATING CHATHEAD ──────────────────────────────────────
-st.markdown("""
-<div id="profit-lens-fab">
-  <div class="fab-label">ASK PROFIT LENS</div>
-  <button onclick="window.location.href='/?open_chat=1'" style="all:unset;cursor:pointer;display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:#005A32;box-shadow:0 4px 20px rgba(0,90,50,0.45)">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="white"/>
-      <circle cx="8" cy="11" r="1.2" fill="#005A32"/>
-      <circle cx="12" cy="11" r="1.2" fill="#005A32"/>
-      <circle cx="16" cy="11" r="1.2" fill="#005A32"/>
-    </svg>
-  </button>
-</div>
-""", unsafe_allow_html=True)
+with st.container():
+    st.markdown("<span id='fab-anchor'></span>", unsafe_allow_html=True)
+    st.markdown("""
+    <div id="profit-lens-fab">
+      <div class="fab-label">ASK PROFIT LENS</div>
+      <div class="fab-visual-btn">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+          <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="white"/>
+          <circle cx="8" cy="11" r="1.2" fill="#005A32"/>
+          <circle cx="12" cy="11" r="1.2" fill="#005A32"/>
+          <circle cx="16" cy="11" r="1.2" fill="#005A32"/>
+        </svg>
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+    if st.button(" ", key="fab_chat"):
+        st.session_state.page = "AI Assistant"
+        st.rerun()
 
 # ── INIT ──────────────────────────────────────────────────
 db.init_db()
@@ -413,21 +433,6 @@ if "chat_history" not in st.session_state: st.session_state.chat_history = []
 if "chat_open"    not in st.session_state: st.session_state.chat_open  = False
 if "warehouse"    not in st.session_state: st.session_state.warehouse  = "WH001 — National (Melbourne)"
 if "_ticket_ai"   not in st.session_state: st.session_state._ticket_ai  = {}
-
-# Handle chathead ?open_chat=1 navigation
-# NOTE: st.rerun() must NOT be inside a bare except Exception — it raises StopException internally
-_open_chat = False
-try:
-    _open_chat = st.query_params.get("open_chat") == "1"
-except Exception:
-    pass
-if _open_chat:
-    st.session_state.page = "AI Assistant"
-    try:
-        st.query_params.clear()
-    except Exception:
-        pass
-    st.rerun()  # outside try/except so StopException propagates correctly
 
 WAREHOUSES = {
     "WH001 — National (Melbourne)": "WH001",
