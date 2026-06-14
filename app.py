@@ -1178,6 +1178,41 @@ def page_dashboard():
         st.markdown("<br>", unsafe_allow_html=True)
         _recovery_bar(stats, pct)
 
+        # ── AI ALERTS (auto-detected) ──────────────────────────
+        st.markdown("""
+        <div style='background:#1A1A0D;border:1px solid #4A3800;border-radius:4px;padding:12px 18px;margin-bottom:16px'>
+          <div style='font-size:9px;letter-spacing:2px;color:#F8B840;font-weight:700;margin-bottom:10px'>
+            ⚡ AI AUTO-DETECTION &nbsp;&nbsp;|&nbsp;&nbsp; SYSTEM ALERTS &nbsp;&middot;&nbsp; UPDATED: JAN–FEB 2026 DATA
+          </div>
+          <div style='display:flex;flex-direction:column;gap:6px'>
+            <div style='display:flex;align-items:center;gap:12px;padding:9px 14px;background:rgba(153,27,27,0.08);border-radius:3px;border-left:3px solid #DC2626'>
+              <div style='font-size:18px'>🚨</div>
+              <div style='flex:1'>
+                <div style='font-size:12px;font-weight:700;color:#FF8080'>BOTTLENECK: Delta Manufacturing exception drain ($446K/yr)</div>
+                <div style='font-size:11px;color:#B06060;margin-top:2px'>3.9× above network average. Root cause: high returns + rework volume. <strong style='color:#FF8080'>Site Manager notified → target below 10% within 30 days.</strong></div>
+              </div>
+              <div style='text-align:right;flex-shrink:0'><div style='font-size:13px;font-weight:800;color:#FF6060'>$446K</div><div style='font-size:9px;color:#996666'>annual drain</div></div>
+            </div>
+            <div style='display:flex;align-items:center;gap:12px;padding:9px 14px;background:rgba(248,184,64,0.06);border-radius:3px;border-left:3px solid #F8B840'>
+              <div style='font-size:18px'>⚠️</div>
+              <div style='flex:1'>
+                <div style='font-size:12px;font-weight:700;color:#F8D27A'>Urgent order throughput penalty ($349K/yr)</div>
+                <div style='font-size:11px;color:#B8A060;margin-top:2px'>Urgent orders 2.35× slower than standard. Premium labour pool adds $349K/yr. <strong style='color:#F8D27A'>Commercial Lead + Site Manager notified.</strong></div>
+              </div>
+              <div style='text-align:right;flex-shrink:0'><div style='font-size:13px;font-weight:800;color:#F8B840'>$349K</div><div style='font-size:9px;color:#998844'>annual drain</div></div>
+            </div>
+            <div style='display:flex;align-items:center;gap:12px;padding:9px 14px;background:rgba(93,191,138,0.04);border-radius:3px;border-left:3px solid #5DBF8A'>
+              <div style='font-size:18px'>✅</div>
+              <div style='flex:1'>
+                <div style='font-size:12px;font-weight:700;color:#8FD4AA'>Productivity improving: +12% pick rate Jan→Feb (no alert needed)</div>
+                <div style='font-size:11px;color:#5D9E78;margin-top:2px'>Network 158→177 units/hr. No structural productivity bottleneck detected. Exception pool (26% of all labour) is the primary improvement lever.</div>
+              </div>
+              <div style='text-align:right;flex-shrink:0'><div style='font-size:13px;font-weight:800;color:#5DBF8A'>+12%</div><div style='font-size:9px;color:#3D8A60'>Jan→Feb</div></div>
+            </div>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
         # MOS CADENCE — CEO (Monthly)
         st.markdown("""
         <div style='background:#1A3D2B;border-radius:4px;padding:16px 20px;margin-bottom:20px'>
@@ -1229,6 +1264,42 @@ def page_dashboard():
                   </div>
                   <div style='font-size:11px;color:{C_MUTED}'>{sub}</div>
                 </div>""", unsafe_allow_html=True)
+
+            # ── WHAT-IF TOGGLE ─────────────────────────────────
+            with st.expander("💡 What-If: Bravo FMCG Pricing Scenarios", expanded=False):
+                bravo_scenario = st.radio(
+                    "Model the Bravo outcome:",
+                    ["Bravo accepts $0.19/pick — +$144K/yr recovered",
+                     "Bravo walks (declines repricing) — account lost"],
+                    key="bravo_whatif",
+                )
+                if "accepts" in bravo_scenario:
+                    st.markdown("""
+                    <div style='background:#0D1F0D;border:1px solid #1F4A1F;border-radius:4px;padding:14px 18px;margin-top:8px'>
+                      <div style='font-size:11px;font-weight:700;color:#5DBF8A;margin-bottom:10px'>SCENARIO: Bravo accepts $0.19/pick</div>
+                      <div style='display:flex;gap:20px;flex-wrap:wrap;margin-bottom:10px'>
+                        <div><div style='font-size:10px;color:#5D9E78'>New rate</div><div style='font-size:18px;font-weight:800;color:#5DBF8A'>$0.19/pick</div><div style='font-size:10px;color:#3D8A60'>was $0.12</div></div>
+                        <div><div style='font-size:10px;color:#5D9E78'>Annual recovery</div><div style='font-size:18px;font-weight:800;color:#5DBF8A'>+$144K</div><div style='font-size:10px;color:#3D8A60'>Year 1</div></div>
+                        <div><div style='font-size:10px;color:#5D9E78'>Still below true cost</div><div style='font-size:18px;font-weight:800;color:#F8B840'>$0.19 vs $0.265</div><div style='font-size:10px;color:#B8A060'>room to grow</div></div>
+                        <div><div style='font-size:10px;color:#5D9E78'>Churn risk</div><div style='font-size:18px;font-weight:800;color:#5DBF8A'>LOW</div><div style='font-size:10px;color:#3D8A60'>gradual pilot</div></div>
+                      </div>
+                      <div style='font-size:11px;color:#8FBF9F;line-height:1.6'>Relationship preserved. $144K/yr recovered from Month 2. Strong precedent for Delta and Charlie repricing. <strong style='color:#5DBF8A'>Recommended path.</strong></div>
+                    </div>
+                    """, unsafe_allow_html=True)
+                else:
+                    st.markdown("""
+                    <div style='background:#0F0D1A;border:1px solid #3D2A6B;border-radius:4px;padding:14px 18px;margin-top:8px'>
+                      <div style='font-size:11px;font-weight:700;color:#A78BFA;margin-bottom:10px'>SCENARIO: Bravo declines — account lost</div>
+                      <div style='display:flex;gap:20px;flex-wrap:wrap;margin-bottom:10px'>
+                        <div><div style='font-size:10px;color:#7C6BAF'>Revenue lost</div><div style='font-size:18px;font-weight:800;color:#F8B840'>-$720K</div><div style='font-size:10px;color:#5A5080'>annual turnover</div></div>
+                        <div><div style='font-size:10px;color:#7C6BAF'>Labour freed</div><div style='font-size:18px;font-weight:800;color:#A78BFA'>+$869K/yr</div><div style='font-size:10px;color:#5A5080'>below-cost service stops</div></div>
+                        <div><div style='font-size:10px;color:#7C6BAF'>Net economic position</div><div style='font-size:18px;font-weight:800;color:#5DBF8A'>+$149K better off</div><div style='font-size:10px;color:#3D8A60'>no replacement needed</div></div>
+                        <div><div style='font-size:10px;color:#7C6BAF'>Capacity freed</div><div style='font-size:18px;font-weight:800;color:#A78BFA'>~15%</div><div style='font-size:10px;color:#5A5080'>for profitable customers</div></div>
+                      </div>
+                      <div style='font-size:11px;color:#9D8FBF;line-height:1.6'>Mattingly <strong style='color:#A78BFA'>wins either way</strong>. Bravo is below-cost: losing the account at $0.12/pick frees $869K of loss-making labour. Soft risk is relationship and revenue optics — not economics.</div>
+                    </div>
+                    """, unsafe_allow_html=True)
+
             st.markdown(sec("Recovery Timeline"), unsafe_allow_html=True)
             _what_changed_visual()
             st.markdown("<br>", unsafe_allow_html=True)
@@ -1460,6 +1531,42 @@ def page_dashboard():
           actually costs Mattingly in labour; most customers pay $0.12–$0.17. Your job is to make sure
           the pick count data is accurate and exceptions are recorded, so the Commercial team can go back
           to customers with clean numbers they can't dispute.
+        </div>
+        """, unsafe_allow_html=True)
+
+        # ── AI AUTO-DETECT: operational bottleneck alerts ──────
+        st.markdown("""
+        <div style='background:#1A0D0D;border:1px solid #6B1A1A;border-radius:4px;padding:12px 16px;margin-bottom:12px'>
+          <div style='font-size:9px;letter-spacing:2px;color:#FF6B6B;font-weight:700;margin-bottom:8px'>
+            🚨 AI BOTTLENECK DETECTED &nbsp;&nbsp;|&nbsp;&nbsp; AUTO-FLAGGED FROM LABOUR DATA
+          </div>
+          <div style='display:flex;gap:16px;align-items:flex-start'>
+            <div style='flex:1'>
+              <div style='font-size:13px;font-weight:700;color:#FF8080;margin-bottom:4px'>Delta Manufacturing — Exception Labour Outlier</div>
+              <div style='font-size:11px;color:#C8A0A0;line-height:1.7'>
+                AI analysis of Jan–Feb labour data flagged Delta as generating <strong style='color:#FF8080'>3.9× more exception labour</strong>
+                than the next-highest customer. Exception handling (returns + rework + urgent orders) drains
+                <strong style='color:#FF8080'>$446K/yr</strong> above what a normal customer of their size would generate.
+              </div>
+              <div style='margin-top:8px;display:flex;gap:8px;flex-wrap:wrap'>
+                <span style='font-size:10px;font-weight:700;color:#FF6060;background:#FF606015;padding:3px 10px;border-radius:2px'>ACTION: Investigate root cause</span>
+                <span style='font-size:10px;font-weight:700;color:#F8B840;background:#F8B84015;padding:3px 10px;border-radius:2px'>TARGET: below 10% in 30 days</span>
+                <span style='font-size:10px;font-weight:700;color:#5DBF8A;background:#5DBF8A15;padding:3px 10px;border-radius:2px'>CEO + Commercial Lead notified</span>
+              </div>
+            </div>
+            <div style='text-align:right;flex-shrink:0;padding-top:4px'>
+              <div style='font-size:22px;font-weight:800;color:#FF6060'>$446K</div>
+              <div style='font-size:9px;color:#996666;margin-top:2px'>annual drain</div>
+              <div style='font-size:9px;color:#996666'>3.9× peers</div>
+            </div>
+          </div>
+        </div>
+        <div style='background:#1A1407;border:1px solid #5C3A00;border-radius:4px;padding:10px 16px;margin-bottom:16px'>
+          <div style='font-size:9px;letter-spacing:1px;color:#F8B840;font-weight:700;margin-bottom:6px'>⚠️ SECONDARY — Urgent Order Throughput Penalty</div>
+          <div style='font-size:11px;color:#C8B080;line-height:1.6'>
+            Urgent orders run at <strong style='color:#F8D27A'>8.5 units/hr vs 19.8/hr standard dispatch</strong> — 2.35× slower.
+            Adds $349K/yr in premium labour. Investigate whether Delta urgent volume is the common root cause.
+          </div>
         </div>
         """, unsafe_allow_html=True)
 
