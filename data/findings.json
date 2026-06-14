@@ -9,14 +9,17 @@
     "recovery_target": 1150000,
     "pick_cost_floor": 0.265,
     "pick_cost_strict": 0.284,
-    "analysis_period": "Jan\u2013Feb 2026",
-    "generated_date": "2026-06-01"
+    "analysis_period": "Jan–Feb 2026",
+    "generated_date": "2026-06-14",
+    "pricing_exposure": 1860000,
+    "ops_exposure": 795000,
+    "total_opportunity": 2655000
   },
   "findings": [
     {
       "id": "F001",
       "type": "pricing_leakage",
-      "title": "Bravo FMCG \u2014 Pick Rate Below Cost",
+      "title": "Bravo FMCG — Pick Rate Below Cost",
       "customer": "Bravo FMCG",
       "customer_id": "C002",
       "priority": "HIGH",
@@ -27,7 +30,7 @@
       "proposed_rate": 0.19,
       "true_cost": 0.265,
       "description": "Bravo FMCG pays $0.12/pick against a true labour cost of $0.265. With 2,055,330 picks/yr this creates a $298K annual subsidy. A half-step to $0.19 recovers $144K/yr while keeping Bravo profitable at 33% margin. Win-either-way: if they accept we recover $144K; if they leave we stop a $298K subsidy.",
-      "ai_explanation": "Bravo FMCG is the most actionable opportunity in the building. They have 2 million picks per year at 12 cents each \u2014 but every pick costs us 26.5 cents to perform. Moving their rate to 19 cents recovers $144,000 per year with a single negotiation. At 19 cents, Bravo still earns a healthy 33% margin \u2014 they have no reason to leave. If they do walk, we stop a $298K annual subsidy. This is the Month 1 pilot that proves the system works.",
+      "ai_explanation": "Bravo FMCG is the most actionable opportunity in the building. They have 2 million picks per year at 12 cents each — but every pick costs us 26.5 cents to perform. Moving their rate to 19 cents recovers $144,000 per year with a single negotiation. At 19 cents, Bravo still earns a healthy 33% margin — they have no reason to leave. If they do walk, we stop a $298K annual subsidy. This is the Month 1 pilot that proves the system works.",
       "action": "Initiate repricing negotiation with Bravo FMCG. Present the activity cost data. Propose $0.19/pick as a fair halfway step. Target: signed by end of Month 1.",
       "tags": [
         "Scale Without Return"
@@ -36,7 +39,7 @@
     {
       "id": "F002",
       "type": "pricing_leakage",
-      "title": "Delta Manufacturing \u2014 Pick Rate Below Cost",
+      "title": "Delta Manufacturing — Pick Rate Below Cost",
       "customer": "Delta Manufacturing",
       "customer_id": "C004",
       "priority": "HIGH",
@@ -46,14 +49,14 @@
       "current_rate": 0.14,
       "proposed_rate": 0.2,
       "true_cost": 0.265,
-      "description": "Delta Manufacturing pays $0.14/pick against true cost $0.265. True margin 16.8% vs reported ~96%. Complex conversation \u2014 Delta also has significant unbilled work (see F004). Sequence after Bravo pilot.",
-      "ai_explanation": "Delta Manufacturing has a double problem: their pick rate is below cost AND they have significant unbilled work. The repricing conversation here is more complex than Bravo \u2014 we need the Bravo outcome as proven cost evidence before approaching Delta. Sequence this after the Month 1 pilot. The unbilled work case (F004) may actually be the better opening for the Delta conversation.",
+      "description": "Delta Manufacturing pays $0.14/pick against true cost $0.265. True margin 16.8% vs reported ~96%. Complex conversation — Delta also has significant unbilled work (see F004). Sequence after Bravo pilot.",
+      "ai_explanation": "Delta Manufacturing has a double problem: their pick rate is below cost AND they have significant unbilled work. The repricing conversation here is more complex than Bravo — we need the Bravo outcome as proven cost evidence before approaching Delta. Sequence this after the Month 1 pilot. The unbilled work case (F004) may actually be the better opening for the Delta conversation.",
       "action": "Sequence after Bravo pilot closes. Use Bravo outcome as cost evidence credibility. Prepare activity data pack for Delta repricing meeting in Month 3."
     },
     {
       "id": "F003",
       "type": "pricing_leakage",
-      "title": "Charlie Medical \u2014 Pick Rate Below Cost",
+      "title": "Charlie Medical — Pick Rate Below Cost",
       "customer": "Charlie Medical",
       "customer_id": "C003",
       "priority": "MEDIUM",
@@ -64,13 +67,13 @@
       "proposed_rate": 0.21,
       "true_cost": 0.265,
       "description": "Charlie Medical pays $0.15/pick. True margin 38.9% vs reported ~96%. Handle unbilled work re-billing (F005) first, then revisit pick rate. Medical sector relationship requires careful approach.",
-      "ai_explanation": "Charlie Medical operates at a better margin than Delta or Bravo, but still below what the reports show. Their more urgent issue is the $127K of unbilled work \u2014 lead with that conversation first. Use the re-billing resolution to build trust, then raise the pick rate in a Month 3 discussion.",
+      "ai_explanation": "Charlie Medical operates at a better margin than Delta or Bravo, but still below what the reports show. Their more urgent issue is the $127K of unbilled work — lead with that conversation first. Use the re-billing resolution to build trust, then raise the pick rate in a Month 3 discussion.",
       "action": "Address unbilled work (F005) first. Then initiate pick rate repricing discussion in Month 3, using re-billing outcome to establish commercial credibility."
     },
     {
       "id": "F004",
       "type": "unbilled_work",
-      "title": "Delta Manufacturing \u2014 Unbilled Exceptions",
+      "title": "Delta Manufacturing — Unbilled Exceptions",
       "customer": "Delta Manufacturing",
       "customer_id": "C004",
       "priority": "HIGH",
@@ -81,13 +84,13 @@
       "proposed_rate": null,
       "true_cost": null,
       "description": "5,340 returns performed vs 4,112 billed; 2,883 rework vs 2,221 billed; 2,378 urgent orders vs 1,801 billed. $147,283/yr of work done but never invoiced. Client exception log confirms unusual volumes at Delta.",
-      "ai_explanation": "Delta Manufacturing generated 5,340 product returns in two months \u2014 but we only billed 4,112. The same gap exists in rework and urgent orders. This is $147,000 per year of real work that our team performs and nobody charges for. Present the activity vs billing data to Delta, identify the contract clause that covers exception billing, and initiate formal re-billing.",
-      "action": "Extract activity vs billing discrepancy by exception type. Identify relevant contract clause. Present evidence to Delta commercial contact. Initiate re-billing for Month 1\u20132 unbilled work."
+      "ai_explanation": "Delta Manufacturing generated 5,340 product returns in two months — but we only billed 4,112. The same gap exists in rework and urgent orders. This is $147,000 per year of real work that our team performs and nobody charges for. Present the activity vs billing data to Delta, identify the contract clause that covers exception billing, and initiate formal re-billing.",
+      "action": "Extract activity vs billing discrepancy by exception type. Identify relevant contract clause. Present evidence to Delta commercial contact. Initiate re-billing for Month 1–2 unbilled work."
     },
     {
       "id": "F005",
       "type": "unbilled_work",
-      "title": "Charlie Medical \u2014 Unbilled Picks and Dispatches",
+      "title": "Charlie Medical — Unbilled Picks and Dispatches",
       "customer": "Charlie Medical",
       "customer_id": "C003",
       "priority": "HIGH",
@@ -97,8 +100,8 @@
       "current_rate": null,
       "proposed_rate": null,
       "true_cost": null,
-      "description": "165K picks performed vs 133K billed; 17,800 dispatches vs 14,400 billed. $126,962/yr unbilled. Client's own exception log flags Charlie as 'Possible Unrecovered Activity' \u2014 independent corroboration.",
-      "ai_explanation": "Charlie Medical's case is unusual because the client already suspected something was wrong \u2014 their internal exception log flags Charlie as 'Possible Unrecovered Activity.' We've now quantified it: $127,000 per year. The fact that the client's own system pointed at Charlie and our independent analysis confirmed it is powerful credibility for the re-billing conversation. Lead with that.",
+      "description": "165K picks performed vs 133K billed; 17,800 dispatches vs 14,400 billed. $126,962/yr unbilled. Client's own exception log flags Charlie as 'Possible Unrecovered Activity' — independent corroboration.",
+      "ai_explanation": "Charlie Medical's case is unusual because the client already suspected something was wrong — their internal exception log flags Charlie as 'Possible Unrecovered Activity.' We've now quantified it: $127,000 per year. The fact that the client's own system pointed at Charlie and our independent analysis confirmed it is powerful credibility for the re-billing conversation. Lead with that.",
       "action": "Prepare billing discrepancy report. Reference client's own exception flag as corroboration. Present to Charlie Medical commercial contact. Initiate formal re-billing process.",
       "tags": [
         "Recurring Daily"
@@ -108,7 +111,7 @@
     {
       "id": "F006",
       "type": "data_hygiene",
-      "title": "Week 1 \u2014 Validate Findings vs 12-Month History",
+      "title": "Week 1 — Validate Findings vs 12-Month History",
       "customer": "All Customers",
       "customer_id": "ALL",
       "priority": "HIGH",
@@ -118,14 +121,14 @@
       "current_rate": null,
       "proposed_rate": null,
       "true_cost": null,
-      "description": "Seasonality has been verified STABLE: all 30 customers show M1/M2 ratio 0.84\u20131.18, confirming the 2-month data is representative. Primary task remaining: validate against 12-month WMS history and confirm labour data gap (4 missing days) does not skew annualisation by more than \u00b15%.",
-      "ai_explanation": "The entire Profit Lens analysis is based on two months of data. Before we approach any customer for repricing, we need to confirm these two months are representative. If there is seasonal volume variation, the annualised numbers could move. This validation takes one week and either confirms the findings \u2014 or tells us to adjust the scale. Either way, it makes every repricing conversation more defensible.",
-      "action": "Pull 12-month revenue history from finance system. Compare Jan\u2013Feb volumes against annual average. Flag any seasonal patterns by customer. Confirm or adjust annualisation factor. Report to Commercial Lead."
+      "description": "Seasonality has been verified STABLE: all 30 customers show M1/M2 ratio 0.84–1.18, confirming the 2-month data is representative. Primary task remaining: validate against 12-month WMS history and confirm labour data gap (4 missing days) does not skew annualisation by more than ±5%.",
+      "ai_explanation": "The entire Profit Lens analysis is based on two months of data. Before we approach any customer for repricing, we need to confirm these two months are representative. If there is seasonal volume variation, the annualised numbers could move. This validation takes one week and either confirms the findings — or tells us to adjust the scale. Either way, it makes every repricing conversation more defensible.",
+      "action": "Pull 12-month revenue history from finance system. Compare Jan–Feb volumes against annual average. Flag any seasonal patterns by customer. Confirm or adjust annualisation factor. Report to Commercial Lead."
     },
     {
       "id": "F007",
       "type": "data_hygiene",
-      "title": "Week 1 \u2014 Close Labour Data Gap (4 Missing Days)",
+      "title": "Week 1 — Close Labour Data Gap (4 Missing Days)",
       "customer": "All Customers",
       "customer_id": "ALL",
       "priority": "HIGH",
@@ -135,30 +138,30 @@
       "current_rate": null,
       "proposed_rate": null,
       "true_cost": null,
-      "description": "4 days of pick labour records show 'Missing time and attendance record' \u2014 no cost assigned. Conservative treatment gives $0.265/pick floor; strict treatment gives $0.284/pick. Gap must be closed before next analysis cycle.",
-      "ai_explanation": "We used $0.265 as the conservative pick cost \u2014 this treats those 4 missing days as if labour was free, making the average look lower. The strict figure is $0.284. At $0.284, the annual pick loss grows to $1.60M. Either number still means every customer is being undercharged. This task closes the gap so the next monthly analysis has no missing data.",
+      "description": "4 days of pick labour records show 'Missing time and attendance record' — no cost assigned. Conservative treatment gives $0.265/pick floor; strict treatment gives $0.284/pick. Gap must be closed before next analysis cycle.",
+      "ai_explanation": "We used $0.265 as the conservative pick cost — this treats those 4 missing days as if labour was free, making the average look lower. The strict figure is $0.284. At $0.284, the annual pick loss grows to $1.60M. Either number still means every customer is being undercharged. This task closes the gap so the next monthly analysis has no missing data.",
       "action": "Identify the 4 dates with missing time-and-attendance records. Retrieve actual cost data from payroll system. Update Labour sheet. Re-run pick cost calculation and confirm floor vs strict figures."
     },
     {
       "id": "F011",
       "type": "pricing_leakage",
-      "title": "Network \u2014 All Pick Rates Below True Cost (Structural Pricing Defect)",
+      "title": "Network — All Pick Rates Below True Cost (Structural Pricing Defect)",
       "customer": "All Customers",
       "customer_id": "ALL",
       "priority": "HIGH",
       "suggested_owner": "Commercial Lead",
       "dollar_impact": 1490000,
       "full_exposure": 1490000,
-      "description": "All 30 customers are priced below the true pick cost of $0.265/pick (conservative floor). Total pricing leakage: $1.49M/yr at the conservative rate, $1.72M/yr at engine-strict $0.284/pick. This is the structural parent finding \u2014 F001 (Bravo $144K), F002 (Delta $198K), and F003 (Charlie $102K) are named sub-findings within this total; summing them with F011 would double-count. Additional unbilled leakage: $374,983/yr total \u2014 Delta $147K + Charlie $127K + other customers $101K.",
+      "description": "All 30 customers are priced below the true pick cost of $0.265/pick (conservative floor). Total pricing leakage: $1.49M/yr at the conservative rate, $1.72M/yr at engine-strict $0.284/pick. This is the structural parent finding — F001 (Bravo $144K), F002 (Delta $198K), and F003 (Charlie $102K) are named sub-findings within this total; summing them with F011 would double-count. Additional unbilled leakage: $374,983/yr total — Delta $147K + Charlie $127K + other customers $101K.",
       "ai_explanation": "The root problem is not any single customer's rate. It is the pricing model itself. A flat per-pick rate penalises the business on high-volume, high-complexity customers and gives the same cost to low-volume, simple customers. The right long-term fix is service tiers: a base rate plus complexity and volume factors. The pilot repricing (Bravo) buys the credibility to have that structural conversation in Month 3.",
-      "action": "After Bravo pilot closes: design tiered pricing model (base + complexity multiplier + volume bracket). Present to CEO in Month 3. Implement in Month 4\u20136 as contract renewals occur.",
+      "action": "After Bravo pilot closes: design tiered pricing model (base + complexity multiplier + volume bracket). Present to CEO in Month 3. Implement in Month 4–6 as contract renewals occur.",
       "is_structural": true,
       "finding_type": "pricing_leakage"
     },
     {
       "id": "F013",
       "type": "commercial_opportunity",
-      "title": "C026 Home & Living Products \u2014 Underutilised Fixed-Fee Account",
+      "title": "C026 Home & Living Products — Underutilised Fixed-Fee Account",
       "customer": "Home & Living Products",
       "customer_id": "C026",
       "priority": "MEDIUM",
@@ -173,13 +176,13 @@
       "proposed_rate": null,
       "true_cost": null,
       "description": "Home & Living Products pays a fixed monthly fee of $45,000 ($540K/yr) but utilises only 47% of allocated warehouse capacity. Actual activity equivalent is ~$21K/month. The unused 53% capacity (worth ~$23K/month, $276K/yr) could be reallocated to high-volume customers or used to onboard new accounts. Alternatively, commercial team should review whether the fixed fee reflects the actual service floor.",
-      "ai_explanation": "Home & Living Products has a fixed-fee arrangement \u2014 they pay the same amount regardless of how much they use. Right now they are using less than half of what they pay for. This is actually a good thing for margin (we collect $45K/month for $21K of activity), but the unused capacity is opportunity cost: that space and labour headroom could serve a new customer paying variable rates. The sales team should either grow Home & Living Products' volume to fill their allocation, or we should consider redeploying that capacity to higher-value use.",
-      "action": "Sales team to review Home & Living Products growth potential \u2014 can they increase volume to fill allocated capacity? If not, identify alternative customers to absorb the 53% gap. Operations to flag the capacity surplus in the monthly utilisation report."
+      "ai_explanation": "Home & Living Products has a fixed-fee arrangement — they pay the same amount regardless of how much they use. Right now they are using less than half of what they pay for. This is actually a good thing for margin (we collect $45K/month for $21K of activity), but the unused capacity is opportunity cost: that space and labour headroom could serve a new customer paying variable rates. The sales team should either grow Home & Living Products' volume to fill their allocation, or we should consider redeploying that capacity to higher-value use.",
+      "action": "Sales team to review Home & Living Products growth potential — can they increase volume to fill allocated capacity? If not, identify alternative customers to absorb the 53% gap. Operations to flag the capacity surplus in the monthly utilisation report."
     },
     {
       "id": "F014",
       "type": "productivity_opportunity",
-      "title": "Delta Manufacturing \u2014 Exception-Handling Labour Drain",
+      "title": "Delta Manufacturing — Exception-Handling Labour Drain",
       "customer": "Delta Manufacturing",
       "customer_id": "C004",
       "priority": "HIGH",
@@ -189,8 +192,8 @@
       "current_rate": null,
       "proposed_rate": null,
       "true_cost": null,
-      "description": "Delta consumes ~9,400 labour hours/yr on returns, rework and urgent orders \u2014 roughly 3.9x the next-highest customer (~$113K/yr). Exception activities run at 5-9 units/hr versus 167/hr for picking, tying up scarce floor labour.",
-      "ai_explanation": "Delta Manufacturing is the warehouse's biggest operational drag. It absorbs about $446,000 a year of labour just handling returns, rework and urgent orders \u2014 nearly four times any other customer. The reason it hurts is throughput: an exception takes 20-30x longer per unit than a normal pick. The root cause is unknown (inbound quality, slotting, Delta's ordering behaviour, or a process failure on our side) \u2014 a two-week floor study will find it. A 30% reduction frees roughly $134K/yr of labour with no pricing change.",
+      "description": "Delta consumes ~9,400 labour hours/yr on returns, rework and urgent orders — roughly 3.9x the next-highest customer (~$113K/yr). Exception activities run at 5-9 units/hr versus 167/hr for picking, tying up scarce floor labour.",
+      "ai_explanation": "Delta Manufacturing is the warehouse's biggest operational drag. It absorbs about $446,000 a year of labour just handling returns, rework and urgent orders — nearly four times any other customer. The reason it hurts is throughput: an exception takes 20-30x longer per unit than a normal pick. The root cause is unknown (inbound quality, slotting, Delta's ordering behaviour, or a process failure on our side) — a two-week floor study will find it. A 30% reduction frees roughly $134K/yr of labour with no pricing change.",
       "action": "Run a 2-week floor root-cause study at Delta (inbound quality, slotting, order patterns). Identify top 3 drivers. Target a 30% cut in exception volume by Month 4. Every 10% reduction frees ~$45K/yr of labour.",
       "tags": [
         "Operational Complexity"
@@ -209,7 +212,7 @@
       "current_rate": null,
       "proposed_rate": null,
       "true_cost": null,
-      "description": "Urgent orders are processed at ~8.5/hr versus ~19.8/hr for standard dispatch \u2014 2.3x the labour per order \u2014 and pre-empt the standard queue, dragging overall throughput. The labour premium is ~$349K/yr.",
+      "description": "Urgent orders are processed at ~8.5/hr versus ~19.8/hr for standard dispatch — 2.3x the labour per order — and pre-empt the standard queue, dragging overall throughput. The labour premium is ~$349K/yr.",
       "ai_explanation": "Every urgent order costs 2.3 times the labour of a standard one and jumps the queue, slowing everything behind it. Across the network that urgency premium is about $349,000 a year. Two fixes: agree cut-off/demand-planning SLAs with the biggest urgent-order customers to convert urgency into planned volume, and introduce a priced urgent surcharge that reflects the real labour cost.",
       "action": "Identify top urgent-order customers. Negotiate cut-off/SLA terms to convert urgent into planned volume; price an urgent surcharge reflecting the 2.3x labour premium. Site Manager + Commercial Lead, Month 2-3.",
       "tags": [
@@ -220,7 +223,7 @@
     {
       "id": "F016",
       "type": "productivity_opportunity",
-      "title": "Network \u2014 Exception Handling Is 26% of All Variable Labour",
+      "title": "Network — Exception Handling Is 26% of All Variable Labour",
       "customer": "All Customers",
       "customer_id": "ALL",
       "priority": "MEDIUM",
@@ -230,8 +233,8 @@
       "current_rate": null,
       "proposed_rate": null,
       "true_cost": null,
-      "description": "Returns, rework and urgent orders consume ~26% of all variable labour hours network-wide \u2014 a ~$3.25M/yr labour pool. dollar_impact is 0 to avoid double-counting; capturable portions are in F014 ($446K) and F015 ($349K).",
-      "ai_explanation": "Step back from any single customer and the structural fact is: a quarter of all the labour we pay for goes on exceptions, not picking and shipping. That is a $3.25M annual pool. A network exception-rate target of 10% lower frees roughly $325K/yr; 25% frees over $800K \u2014 with no pricing change.",
+      "description": "Returns, rework and urgent orders consume ~26% of all variable labour hours network-wide — a ~$3.25M/yr labour pool. dollar_impact is 0 to avoid double-counting; capturable portions are in F014 ($446K) and F015 ($349K).",
+      "ai_explanation": "Step back from any single customer and the structural fact is: a quarter of all the labour we pay for goes on exceptions, not picking and shipping. That is a $3.25M annual pool. A network exception-rate target of 10% lower frees roughly $325K/yr; 25% frees over $800K — with no pricing change.",
       "action": "Set a network exception-rate KPI and review monthly. Use F014/F015 floor studies as the template. CEO sets the target; Site Manager owns delivery.",
       "tags": [
         "Strategic",
@@ -274,7 +277,7 @@
         }
       ],
       "recommendation": "REPRICE",
-      "recommendation_note": "Critical \u2014 19% true margin. Immediate repricing required.",
+      "recommendation_note": "Critical — 19% true margin. Immediate repricing required.",
       "flag": "HIGH",
       "tags": [
         "Operational Complexity",
@@ -1477,7 +1480,7 @@
       },
       {
         "month": 6,
-        "action": "Sites 2\u20133 onboarded",
+        "action": "Sites 2–3 onboarded",
         "cumulative": 850000
       },
       {
