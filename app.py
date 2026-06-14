@@ -1409,6 +1409,71 @@ def page_dashboard():
             </div>
             """, unsafe_allow_html=True)
 
+            # ── TIERED PRICING EXAMPLE ───────────────────────────────────────
+            st.markdown(f"<div style='font-size:11px;font-weight:700;color:{C_MUTED};letter-spacing:1px;margin:14px 0 8px'>YEAR-END GOAL: MOVE FROM FLAT-RATE TO TIERED PRICING</div>", unsafe_allow_html=True)
+            st.markdown(f"""
+            <div style='background:{C_CARD};border:1px solid {C_BORDER};border-radius:4px;padding:16px 18px;margin-bottom:8px'>
+              <div style='font-size:11px;font-weight:700;color:{C_TEXT};margin-bottom:12px'>Proposed Tier Structure — Worked Example</div>
+              <!-- Tier legend -->
+              <div style='display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:14px'>
+                <div style='background:#0D1F0D;border-radius:3px;padding:8px 10px;border-left:3px solid #5DBF8A'>
+                  <div style='font-size:9px;color:#5DBF8A;font-weight:700;margin-bottom:3px'>TIER 1 · BASE</div>
+                  <div style='font-size:13px;font-weight:800;color:{C_TEXT}'>$0.265/pick</div>
+                  <div style='font-size:10px;color:{C_MUTED};margin-top:2px'>True cost floor · all customers</div>
+                </div>
+                <div style='background:#1A1200;border-radius:3px;padding:8px 10px;border-left:3px solid {C_AMBER}'>
+                  <div style='font-size:9px;color:{C_AMBER};font-weight:700;margin-bottom:3px'>TIER 2 · VOLUME CREDIT</div>
+                  <div style='font-size:13px;font-weight:800;color:{C_TEXT}'>−10% @ &gt;1.5M picks</div>
+                  <div style='font-size:10px;color:{C_MUTED};margin-top:2px'>$0.239 floor · rewards scale</div>
+                </div>
+                <div style='background:#1A0A0A;border-radius:3px;padding:8px 10px;border-left:3px solid {C_RED}'>
+                  <div style='font-size:9px;color:{C_RED};font-weight:700;margin-bottom:3px'>TIER 3 · COMPLEXITY SURCHARGE</div>
+                  <div style='font-size:13px;font-weight:800;color:{C_TEXT}'>+15% @ &gt;4% exception rate</div>
+                  <div style='font-size:10px;color:{C_MUTED};margin-top:2px'>$0.305 · reflects true cost</div>
+                </div>
+              </div>
+              <!-- Customer table -->
+              <table style='width:100%;border-collapse:collapse;font-size:11px'>
+                <thead>
+                  <tr style='border-bottom:1px solid {C_BORDER}'>
+                    <th style='text-align:left;color:{C_MUTED};padding:5px 0;font-weight:600'>Customer</th>
+                    <th style='text-align:right;color:{C_MUTED};padding:5px 0;font-weight:600'>Current</th>
+                    <th style='text-align:right;color:{C_MUTED};padding:5px 0;font-weight:600'>Tier</th>
+                    <th style='text-align:right;color:{C_MUTED};padding:5px 0;font-weight:600'>Proposed</th>
+                    <th style='text-align:right;color:{C_MUTED};padding:5px 0;font-weight:600'>Recovery</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr style='border-bottom:1px solid {C_BORDER}20'>
+                    <td style='padding:7px 0;color:{C_TEXT};font-weight:600'>Bravo FMCG<br><span style='font-size:9px;color:{C_MUTED};font-weight:400'>2.05M picks · 0.6% exception</span></td>
+                    <td style='text-align:right;color:{C_RED};padding:7px 0'>$0.12</td>
+                    <td style='text-align:right;color:{C_AMBER};padding:7px 0'>T2 Volume</td>
+                    <td style='text-align:right;color:#5DBF8A;padding:7px 0;font-weight:700'>$0.19*</td>
+                    <td style='text-align:right;color:#5DBF8A;padding:7px 0;font-weight:700'>+$144K</td>
+                  </tr>
+                  <tr style='border-bottom:1px solid {C_BORDER}20'>
+                    <td style='padding:7px 0;color:{C_TEXT};font-weight:600'>Delta Manufacturing<br><span style='font-size:9px;color:{C_MUTED};font-weight:400'>1.44M picks · 4.4% exception</span></td>
+                    <td style='text-align:right;color:{C_RED};padding:7px 0'>$0.14</td>
+                    <td style='text-align:right;color:{C_RED};padding:7px 0'>T3 Complex</td>
+                    <td style='text-align:right;color:#5DBF8A;padding:7px 0;font-weight:700'>$0.20</td>
+                    <td style='text-align:right;color:#5DBF8A;padding:7px 0;font-weight:700'>+$86K</td>
+                  </tr>
+                  <tr>
+                    <td style='padding:7px 0;color:{C_TEXT};font-weight:600'>Charlie Medical<br><span style='font-size:9px;color:{C_MUTED};font-weight:400'>0.99M picks · 0.7% exception</span></td>
+                    <td style='text-align:right;color:{C_RED};padding:7px 0'>$0.15</td>
+                    <td style='text-align:right;color:{C_AMBER};padding:7px 0'>T1 Base</td>
+                    <td style='text-align:right;color:#5DBF8A;padding:7px 0;font-weight:700'>$0.21</td>
+                    <td style='text-align:right;color:#5DBF8A;padding:7px 0;font-weight:700'>+$60K</td>
+                  </tr>
+                </tbody>
+              </table>
+              <div style='font-size:10px;color:{C_MUTED};margin-top:10px;border-top:1px solid {C_BORDER};padding-top:8px'>
+                * $0.19 is the Month-1 negotiated half-step — still below T2 floor. Brings Bravo to cost parity by Year 2.<br>
+                Tiered structure replaces a flat rate that hides complexity cost. Delta pays more because exceptions cost more.
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
+
         _render_next_action(role, all_tickets)
 
         left, right = st.columns([3, 2])
@@ -1466,6 +1531,46 @@ def page_dashboard():
                       <div style='font-size:11px;color:#9D8FBF;line-height:1.6'>Mattingly <strong style='color:#A78BFA'>wins either way</strong>. Bravo is below-cost: losing the account at $0.12/pick frees $869K of loss-making labour. Soft risk is relationship and revenue optics — not economics.</div>
                     </div>
                     """, unsafe_allow_html=True)
+
+            # ── BEST / LIKELY / WORST ────────────────────────────────
+            st.markdown(sec("Recovery Scenarios"), unsafe_allow_html=True)
+            st.markdown(f"""
+            <div style='display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:18px'>
+              <!-- WORST -->
+              <div style='background:#1A0A0A;border:1px solid {C_RED}40;border-top:3px solid {C_RED};
+                          border-radius:4px;padding:14px 16px'>
+                <div style='font-size:9px;font-weight:700;color:{C_RED};letter-spacing:1px;margin-bottom:8px'>WORST CASE</div>
+                <div style='font-size:9px;color:{C_MUTED};margin-bottom:4px'>Bravo pilot stalls · No re-billing</div>
+                <div style='font-size:22px;font-weight:800;color:{C_RED};margin:6px 0'>$144K</div>
+                <div style='font-size:9px;color:{C_MUTED};margin-bottom:10px'>Year 1 recovery</div>
+                <div style='font-size:10px;color:{C_MUTED};line-height:1.6;border-top:1px solid {C_BORDER};padding-top:8px'>
+                  Bravo at $0.19 only.<br>Delta/Charlie conversations delayed.<br>Ops exposure untouched.
+                </div>
+              </div>
+              <!-- LIKELY -->
+              <div style='background:#1A1200;border:1px solid {C_AMBER}40;border-top:3px solid {C_AMBER};
+                          border-radius:4px;padding:14px 16px'>
+                <div style='font-size:9px;font-weight:700;color:{C_AMBER};letter-spacing:1px;margin-bottom:8px'>LIKELY CASE</div>
+                <div style='font-size:9px;color:{C_MUTED};margin-bottom:4px'>Bravo + re-billing + partial ops</div>
+                <div style='font-size:22px;font-weight:800;color:{C_AMBER};margin:6px 0'>$560K</div>
+                <div style='font-size:9px;color:{C_MUTED};margin-bottom:10px'>by Month 3</div>
+                <div style='font-size:10px;color:{C_MUTED};line-height:1.6;border-top:1px solid {C_BORDER};padding-top:8px'>
+                  Bravo signed Month 1.<br>Delta/Charlie re-billing Month 2–3.<br>Delta exception study in flight.
+                </div>
+              </div>
+              <!-- BEST -->
+              <div style='background:#091A0E;border:1px solid {C_GREEN}40;border-top:3px solid {C_GREEN};
+                          border-radius:4px;padding:14px 16px'>
+                <div style='font-size:9px;font-weight:700;color:{C_GREEN};letter-spacing:1px;margin-bottom:8px'>BEST CASE</div>
+                <div style='font-size:9px;color:{C_MUTED};margin-bottom:4px'>Full 9-month rollout · Sites 2–3</div>
+                <div style='font-size:22px;font-weight:800;color:{C_GREEN};margin:6px 0'>$1.15M</div>
+                <div style='font-size:9px;color:{C_MUTED};margin-bottom:10px'>by Month 9</div>
+                <div style='font-size:10px;color:{C_MUTED};line-height:1.6;border-top:1px solid {C_BORDER};padding-top:8px'>
+                  All 3 pricing pilots closed.<br>Ops savings realised.<br>Sites 2–3 live on Profit Lens.
+                </div>
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
 
             st.markdown(sec("Recovery Timeline"), unsafe_allow_html=True)
             _what_changed_visual()
