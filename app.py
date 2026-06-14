@@ -1476,6 +1476,43 @@ def page_dashboard():
 
         _render_next_action(role, all_tickets)
 
+        # ── BEST / LIKELY / WORST (full-width, always visible) ────────
+        st.markdown(sec("Recovery Scenarios"), unsafe_allow_html=True)
+        st.markdown(f"""
+        <div style='display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:6px'>
+          <div style='background:#1A0A0A;border:1px solid {{C_RED}}40;border-top:3px solid {{C_RED}};
+                      border-radius:4px;padding:14px 16px'>
+            <div style='font-size:9px;font-weight:700;color:{{C_RED}};letter-spacing:1px;margin-bottom:8px'>WORST CASE</div>
+            <div style='font-size:9px;color:{{C_MUTED}};margin-bottom:4px'>Bravo pilot stalls · No re-billing</div>
+            <div style='font-size:22px;font-weight:800;color:{{C_RED}};margin:6px 0'>$144K</div>
+            <div style='font-size:9px;color:{{C_MUTED}};margin-bottom:10px'>Year 1 recovery</div>
+            <div style='font-size:10px;color:{{C_MUTED}};line-height:1.6;border-top:1px solid {{C_BORDER}};padding-top:8px'>
+              Bravo at $0.19 only. Delta/Charlie delayed. Ops exposure untouched.
+            </div>
+          </div>
+          <div style='background:#1A1200;border:1px solid {{C_AMBER}}40;border-top:3px solid {{C_AMBER}};
+                      border-radius:4px;padding:14px 16px'>
+            <div style='font-size:9px;font-weight:700;color:{{C_AMBER}};letter-spacing:1px;margin-bottom:8px'>LIKELY CASE</div>
+            <div style='font-size:9px;color:{{C_MUTED}};margin-bottom:4px'>Bravo + re-billing + partial ops</div>
+            <div style='font-size:22px;font-weight:800;color:{{C_AMBER}};margin:6px 0'>$560K</div>
+            <div style='font-size:9px;color:{{C_MUTED}};margin-bottom:10px'>by Month 3</div>
+            <div style='font-size:10px;color:{{C_MUTED}};line-height:1.6;border-top:1px solid {{C_BORDER}};padding-top:8px'>
+              Bravo signed Month 1. Delta/Charlie re-billing Month 2–3. Exception study in flight.
+            </div>
+          </div>
+          <div style='background:#091A0E;border:1px solid {{C_GREEN}}40;border-top:3px solid {{C_GREEN}};
+                      border-radius:4px;padding:14px 16px'>
+            <div style='font-size:9px;font-weight:700;color:{{C_GREEN}};letter-spacing:1px;margin-bottom:8px'>BEST CASE</div>
+            <div style='font-size:9px;color:{{C_MUTED}};margin-bottom:4px'>Full 9-month rollout · Sites 2–3</div>
+            <div style='font-size:22px;font-weight:800;color:{{C_GREEN}};margin:6px 0'>$1.15M</div>
+            <div style='font-size:9px;color:{{C_MUTED}};margin-bottom:10px'>by Month 9</div>
+            <div style='font-size:10px;color:{{C_MUTED}};line-height:1.6;border-top:1px solid {{C_BORDER}};padding-top:8px'>
+              All 3 pilots closed. Ops savings realised. Sites 2–3 on Profit Lens.
+            </div>
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
         left, right = st.columns([3, 2])
         with left:
             st.markdown(sec("Decisions Required This Month"), unsafe_allow_html=True)
@@ -1496,6 +1533,26 @@ def page_dashboard():
                   </div>
                   <div style='font-size:11px;color:{C_MUTED}'>{sub}</div>
                 </div>""", unsafe_allow_html=True)
+
+            # ── WHY BRAVO FIRST? ────────────────────────────────
+            st.markdown(f"""
+            <div style='background:{C_CARD};border:1px solid {C_BORDER};border-left:4px solid #5DBF8A;
+                        border-radius:0 4px 4px 0;padding:13px 16px;margin:10px 0'>
+              <div style='font-size:9px;font-weight:700;color:#5DBF8A;letter-spacing:1px;margin-bottom:9px'>
+                🎯 SEQUENCING LOGIC — WHY BRAVO FIRST?
+              </div>
+              <div style='display:grid;grid-template-columns:1fr 1fr;gap:12px'>
+                <div style='font-size:11px;color:{C_TEXT};line-height:1.7'>
+                  <span style='color:#5DBF8A;font-weight:700'>Lowest churn risk.</span> 0.6% exception rate vs Delta's 4.4%. Clean operations — no complexity grievances to complicate the conversation.<br><br>
+                  <span style='color:#5DBF8A;font-weight:700'>Cleanest lever.</span> One ask: pick rate $0.12 → $0.19. No unbilled work audit needed. One meeting, one decision-maker.
+                </div>
+                <div style='font-size:11px;color:{C_TEXT};line-height:1.7'>
+                  <span style='color:#5DBF8A;font-weight:700'>Builds the evidence floor.</span> Bravo's accepted rate becomes the credibility anchor for every Delta and Charlie conversation that follows.<br><br>
+                  <span style='color:#5DBF8A;font-weight:700'>Win-either-way.</span> Accept → +$144K. Walk → stop a $298K annual subsidy. Delta ($345K) is bigger but needs Bravo as precedent first.
+                </div>
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
 
             # ── WHAT-IF TOGGLE ─────────────────────────────────
             with st.expander("💡 What-If: Bravo FMCG Pricing Scenarios", expanded=False):
@@ -1531,46 +1588,6 @@ def page_dashboard():
                       <div style='font-size:11px;color:#9D8FBF;line-height:1.6'>Mattingly <strong style='color:#A78BFA'>wins either way</strong>. Bravo is below-cost: losing the account at $0.12/pick frees $869K of loss-making labour. Soft risk is relationship and revenue optics — not economics.</div>
                     </div>
                     """, unsafe_allow_html=True)
-
-            # ── BEST / LIKELY / WORST ────────────────────────────────
-            st.markdown(sec("Recovery Scenarios"), unsafe_allow_html=True)
-            st.markdown(f"""
-            <div style='display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:18px'>
-              <!-- WORST -->
-              <div style='background:#1A0A0A;border:1px solid {C_RED}40;border-top:3px solid {C_RED};
-                          border-radius:4px;padding:14px 16px'>
-                <div style='font-size:9px;font-weight:700;color:{C_RED};letter-spacing:1px;margin-bottom:8px'>WORST CASE</div>
-                <div style='font-size:9px;color:{C_MUTED};margin-bottom:4px'>Bravo pilot stalls · No re-billing</div>
-                <div style='font-size:22px;font-weight:800;color:{C_RED};margin:6px 0'>$144K</div>
-                <div style='font-size:9px;color:{C_MUTED};margin-bottom:10px'>Year 1 recovery</div>
-                <div style='font-size:10px;color:{C_MUTED};line-height:1.6;border-top:1px solid {C_BORDER};padding-top:8px'>
-                  Bravo at $0.19 only.<br>Delta/Charlie conversations delayed.<br>Ops exposure untouched.
-                </div>
-              </div>
-              <!-- LIKELY -->
-              <div style='background:#1A1200;border:1px solid {C_AMBER}40;border-top:3px solid {C_AMBER};
-                          border-radius:4px;padding:14px 16px'>
-                <div style='font-size:9px;font-weight:700;color:{C_AMBER};letter-spacing:1px;margin-bottom:8px'>LIKELY CASE</div>
-                <div style='font-size:9px;color:{C_MUTED};margin-bottom:4px'>Bravo + re-billing + partial ops</div>
-                <div style='font-size:22px;font-weight:800;color:{C_AMBER};margin:6px 0'>$560K</div>
-                <div style='font-size:9px;color:{C_MUTED};margin-bottom:10px'>by Month 3</div>
-                <div style='font-size:10px;color:{C_MUTED};line-height:1.6;border-top:1px solid {C_BORDER};padding-top:8px'>
-                  Bravo signed Month 1.<br>Delta/Charlie re-billing Month 2–3.<br>Delta exception study in flight.
-                </div>
-              </div>
-              <!-- BEST -->
-              <div style='background:#091A0E;border:1px solid {C_GREEN}40;border-top:3px solid {C_GREEN};
-                          border-radius:4px;padding:14px 16px'>
-                <div style='font-size:9px;font-weight:700;color:{C_GREEN};letter-spacing:1px;margin-bottom:8px'>BEST CASE</div>
-                <div style='font-size:9px;color:{C_MUTED};margin-bottom:4px'>Full 9-month rollout · Sites 2–3</div>
-                <div style='font-size:22px;font-weight:800;color:{C_GREEN};margin:6px 0'>$1.15M</div>
-                <div style='font-size:9px;color:{C_MUTED};margin-bottom:10px'>by Month 9</div>
-                <div style='font-size:10px;color:{C_MUTED};line-height:1.6;border-top:1px solid {C_BORDER};padding-top:8px'>
-                  All 3 pricing pilots closed.<br>Ops savings realised.<br>Sites 2–3 live on Profit Lens.
-                </div>
-              </div>
-            </div>
-            """, unsafe_allow_html=True)
 
             st.markdown(sec("Recovery Timeline"), unsafe_allow_html=True)
             _what_changed_visual()
