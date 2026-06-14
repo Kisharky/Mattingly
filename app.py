@@ -24,6 +24,15 @@ try:
 except ImportError:
     _ENGINE_AVAILABLE = False
 
+try:
+    from operations_pages import page_operations, page_info_gaps, set_dataset_path as _set_ops_path
+    _ops_xlsx = os.path.join(os.path.dirname(__file__), "data",
+                             "Mattingly_Hackathon_Warehouse_Dataset_contestant.xlsx")
+    _set_ops_path(_ops_xlsx)
+    _OPS_AVAILABLE = True
+except ImportError:
+    _OPS_AVAILABLE = False
+
 # ── PAGE CONFIG ────────────────────────────────────────────
 st.set_page_config(
     page_title="Profit Lens | Mattingly",
@@ -48,9 +57,11 @@ CONFIDENCE_MAP = {
     "F005": ("HIGH", "#22C55E"),
     "F006": ("HIGH", "#22C55E"),
     "F007": ("MED",  "#F59E0B"),
-    "F010": ("MED",  "#F59E0B"),
     "F011": ("HIGH", "#22C55E"),
     "F013": ("MED",  "#F59E0B"),
+    "F014": ("HIGH", "#22C55E"),
+    "F015": ("HIGH", "#22C55E"),
+    "F016": ("MED",  "#F59E0B"),
 }
 DATA_PATH = os.path.join(os.path.dirname(__file__), "data", "findings.json")
 
@@ -91,6 +102,7 @@ TYPE_LABEL = {
     "productivity_opportunity":"Productivity",
     "bottleneck":              "Bottleneck",
     "commercial_opportunity":  "Commercial Opportunity",
+    "structural_pricing":      "Structural Pricing",
 }
 
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
@@ -487,6 +499,8 @@ with st.sidebar:
         ("Customer Profitability","Customer Profitability"),
         ("Action Queue",          "Action Queue"),
         ("Recovery Tracker",      "Recovery Tracker"),
+        ("Operations",            "Operations & Bottlenecks"),
+        ("Information Gaps",      "Information Gaps"),
         ("AI Assistant",          "Management Q&A"),
         ("Tickets",               "Ticket Register"),
         ("Load Data",             "Data Import"),
@@ -1403,7 +1417,7 @@ def page_dashboard():
         k1, k2, k3, k4, k5 = st.columns(5)
         k1.markdown(kpi_card("Open Operational", str(len(open_mine)), "Tickets assigned to Site Manager", C_AMBER), unsafe_allow_html=True)
         k2.markdown(kpi_card("Data Hygiene", str(len(hygiene_t)), "Must close before negotiations", C_RED if hygiene_t else C_GREEN), unsafe_allow_html=True)
-        k3.markdown(kpi_card("Delta Exception Rate", "14.1%", "vs 5.8% network avg — investigate", C_RED), unsafe_allow_html=True)
+        k3.markdown(kpi_card("Delta Exception Drain", "$446K/yr", "3.9× next-highest customer (F014)", C_RED), unsafe_allow_html=True)
         k4.markdown(kpi_card("True Pick Cost", "$0.265/pick", "All-in labour cost (ABC analysis)", C_RED), unsafe_allow_html=True)
         k5.markdown(kpi_card("Completed by You", str(len(done_mine)), "Tickets resolved this period", C_GREEN), unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
@@ -2517,14 +2531,30 @@ def page_load_data():
         st.error(f"Error reading tickets: {e}")
 
 
-# \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+
+# ═══════════════════════════════════════════════════════════
 # ROUTER
-# \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+# ═══════════════════════════════════════════════════════════
+
+def _page_operations_safe():
+    if _OPS_AVAILABLE:
+        page_operations()
+    else:
+        st.error("operations_pages.py not found. Copy it to the Phase 3 Tool folder.")
+
+def _page_info_gaps_safe():
+    if _OPS_AVAILABLE:
+        page_info_gaps()
+    else:
+        st.error("operations_pages.py not found. Copy it to the Phase 3 Tool folder.")
+
 PAGE_FN = {
     "Dashboard":              page_dashboard,
     "Customer Profitability": page_customer_profitability,
     "Action Queue":           page_action_queue,
     "Recovery Tracker":       page_recovery,
+    "Operations":             _page_operations_safe,
+    "Information Gaps":       _page_info_gaps_safe,
     "AI Assistant":           page_ai_assistant,
     "Tickets":                page_tickets,
     "Load Data":              page_load_data,

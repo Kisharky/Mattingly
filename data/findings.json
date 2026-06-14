@@ -140,20 +140,6 @@
       "action": "Identify the 4 dates with missing time-and-attendance records. Retrieve actual cost data from payroll system. Update Labour sheet. Re-run pick cost calculation and confirm floor vs strict figures."
     },
     {
-      "id": "F010",
-      "type": "productivity_opportunity",
-      "title": "Delta Manufacturing \u2014 Exception Rate 2.4\u00d7 Network Average",
-      "customer": "Delta Manufacturing",
-      "customer_id": "C004",
-      "priority": "MEDIUM",
-      "suggested_owner": "Site Manager",
-      "dollar_impact": 62000,
-      "full_exposure": 62000,
-      "description": "Delta's exception rate is 14.1% of volume vs network average 5.8%. The gap (8.3 percentage points) represents avoidable labour cost. If Delta's rate moved to network average, labour absorption improves by ~$62K/yr.",
-      "ai_explanation": "Delta Manufacturing generates far more exceptions than any comparable customer. Returns, rework, and urgent orders at Delta consume labour that isn't recovered through billing. The root cause is unknown \u2014 it could be their ordering pattern, product handling, our slotting, or a process failure on our side. A 2-week floor analysis will identify the cause and the fix. If we can bring Delta's exception rate to network average, labour cost drops by ~$62K/yr without any pricing change.",
-      "action": "Complete floor analysis (F008 must close first). Identify top 3 root causes. Design operational fix \u2014 slotting change, inbound quality check, or SLA clause. Target: exception rate below 8% by Month 4."
-    },
-    {
       "id": "F011",
       "type": "pricing_leakage",
       "title": "Network \u2014 All Pick Rates Below True Cost (Structural Pricing Defect)",
@@ -166,7 +152,8 @@
       "description": "All 30 customers are priced below the true pick cost of $0.265/pick (conservative floor). Total pricing leakage: $1.49M/yr at the conservative rate, $1.72M/yr at engine-strict $0.284/pick. This is the structural parent finding \u2014 F001 (Bravo $144K), F002 (Delta $198K), and F003 (Charlie $102K) are named sub-findings within this total; summing them with F011 would double-count. Additional unbilled leakage: $374,983/yr total \u2014 Delta $147K + Charlie $127K + other customers $101K.",
       "ai_explanation": "The root problem is not any single customer's rate. It is the pricing model itself. A flat per-pick rate penalises the business on high-volume, high-complexity customers and gives the same cost to low-volume, simple customers. The right long-term fix is service tiers: a base rate plus complexity and volume factors. The pilot repricing (Bravo) buys the credibility to have that structural conversation in Month 3.",
       "action": "After Bravo pilot closes: design tiered pricing model (base + complexity multiplier + volume bracket). Present to CEO in Month 3. Implement in Month 4\u20136 as contract renewals occur.",
-      "is_structural": true
+      "is_structural": true,
+      "finding_type": "pricing_leakage"
     },
     {
       "id": "F013",
@@ -188,6 +175,68 @@
       "description": "Home & Living Products pays a fixed monthly fee of $45,000 ($540K/yr) but utilises only 47% of allocated warehouse capacity. Actual activity equivalent is ~$21K/month. The unused 53% capacity (worth ~$23K/month, $276K/yr) could be reallocated to high-volume customers or used to onboard new accounts. Alternatively, commercial team should review whether the fixed fee reflects the actual service floor.",
       "ai_explanation": "Home & Living Products has a fixed-fee arrangement \u2014 they pay the same amount regardless of how much they use. Right now they are using less than half of what they pay for. This is actually a good thing for margin (we collect $45K/month for $21K of activity), but the unused capacity is opportunity cost: that space and labour headroom could serve a new customer paying variable rates. The sales team should either grow Home & Living Products' volume to fill their allocation, or we should consider redeploying that capacity to higher-value use.",
       "action": "Sales team to review Home & Living Products growth potential \u2014 can they increase volume to fill allocated capacity? If not, identify alternative customers to absorb the 53% gap. Operations to flag the capacity surplus in the monthly utilisation report."
+    },
+    {
+      "id": "F014",
+      "type": "productivity_opportunity",
+      "title": "Delta Manufacturing \u2014 Exception-Handling Labour Drain",
+      "customer": "Delta Manufacturing",
+      "customer_id": "C004",
+      "priority": "HIGH",
+      "suggested_owner": "Site Manager",
+      "dollar_impact": 446000,
+      "full_exposure": 446000,
+      "current_rate": null,
+      "proposed_rate": null,
+      "true_cost": null,
+      "description": "Delta consumes ~9,400 labour hours/yr on returns, rework and urgent orders \u2014 roughly 3.9x the next-highest customer (~$113K/yr). Exception activities run at 5-9 units/hr versus 167/hr for picking, tying up scarce floor labour.",
+      "ai_explanation": "Delta Manufacturing is the warehouse's biggest operational drag. It absorbs about $446,000 a year of labour just handling returns, rework and urgent orders \u2014 nearly four times any other customer. The reason it hurts is throughput: an exception takes 20-30x longer per unit than a normal pick. The root cause is unknown (inbound quality, slotting, Delta's ordering behaviour, or a process failure on our side) \u2014 a two-week floor study will find it. A 30% reduction frees roughly $134K/yr of labour with no pricing change.",
+      "action": "Run a 2-week floor root-cause study at Delta (inbound quality, slotting, order patterns). Identify top 3 drivers. Target a 30% cut in exception volume by Month 4. Every 10% reduction frees ~$45K/yr of labour.",
+      "tags": [
+        "Operational Complexity"
+      ]
+    },
+    {
+      "id": "F015",
+      "type": "bottleneck",
+      "title": "Urgent Orders Disrupt Standard Pick & Dispatch Flow",
+      "customer": "All Customers",
+      "customer_id": "ALL",
+      "priority": "MEDIUM",
+      "suggested_owner": "Site Manager",
+      "dollar_impact": 349000,
+      "full_exposure": 349000,
+      "current_rate": null,
+      "proposed_rate": null,
+      "true_cost": null,
+      "description": "Urgent orders are processed at ~8.5/hr versus ~19.8/hr for standard dispatch \u2014 2.3x the labour per order \u2014 and pre-empt the standard queue, dragging overall throughput. The labour premium is ~$349K/yr.",
+      "ai_explanation": "Every urgent order costs 2.3 times the labour of a standard one and jumps the queue, slowing everything behind it. Across the network that urgency premium is about $349,000 a year. Two fixes: agree cut-off/demand-planning SLAs with the biggest urgent-order customers to convert urgency into planned volume, and introduce a priced urgent surcharge that reflects the real labour cost.",
+      "action": "Identify top urgent-order customers. Negotiate cut-off/SLA terms to convert urgent into planned volume; price an urgent surcharge reflecting the 2.3x labour premium. Site Manager + Commercial Lead, Month 2-3.",
+      "tags": [
+        "Throughput",
+        "Service Intensive"
+      ]
+    },
+    {
+      "id": "F016",
+      "type": "productivity_opportunity",
+      "title": "Network \u2014 Exception Handling Is 26% of All Variable Labour",
+      "customer": "All Customers",
+      "customer_id": "ALL",
+      "priority": "MEDIUM",
+      "suggested_owner": "Site Manager",
+      "dollar_impact": 0,
+      "full_exposure": 3250000,
+      "current_rate": null,
+      "proposed_rate": null,
+      "true_cost": null,
+      "description": "Returns, rework and urgent orders consume ~26% of all variable labour hours network-wide \u2014 a ~$3.25M/yr labour pool. dollar_impact is 0 to avoid double-counting; capturable portions are in F014 ($446K) and F015 ($349K).",
+      "ai_explanation": "Step back from any single customer and the structural fact is: a quarter of all the labour we pay for goes on exceptions, not picking and shipping. That is a $3.25M annual pool. A network exception-rate target of 10% lower frees roughly $325K/yr; 25% frees over $800K \u2014 with no pricing change.",
+      "action": "Set a network exception-rate KPI and review monthly. Use F014/F015 floor studies as the template. CEO sets the target; Site Manager owns delivery.",
+      "tags": [
+        "Strategic",
+        "Productivity"
+      ]
     }
   ],
   "customer_profiles": [
