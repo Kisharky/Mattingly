@@ -784,7 +784,7 @@ def get_ai_response(query, role):
     return (
         "The question is outside my pre-built knowledge base. Key facts:\n\n"
         "- **True pick cost:** $0.265/pick (exact, validated via ABC)\n"
-        "- **Total exposure:** $1.86M/yr across all customers\n"
+        "- **Total opportunity:** $2.65M/yr ($1.86M pricing leakage + $0.80M operational)\n"
         "- **Delivery target:** $1,150,000 over 9 months\n"
         "- **Month 1 priority:** Bravo FMCG repricing ($144K)\n"
         "- **Largest exposure:** Delta Manufacturing ($345K combined)\n\n"

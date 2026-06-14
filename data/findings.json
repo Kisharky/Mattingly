@@ -49,7 +49,7 @@
       "current_rate": 0.14,
       "proposed_rate": 0.2,
       "true_cost": 0.265,
-      "description": "Delta Manufacturing pays $0.14/pick against true cost $0.265. True margin 16.8% vs reported ~96%. Complex conversation — Delta also has significant unbilled work (see F004). Sequence after Bravo pilot.",
+      "description": "Delta Manufacturing pays $0.14/pick against true cost $0.265. True margin 19.5% vs reported ~96%. Complex conversation — Delta also has significant unbilled work (see F004). Sequence after Bravo pilot.",
       "ai_explanation": "Delta Manufacturing has a double problem: their pick rate is below cost AND they have significant unbilled work. The repricing conversation here is more complex than Bravo — we need the Bravo outcome as proven cost evidence before approaching Delta. Sequence this after the Month 1 pilot. The unbilled work case (F004) may actually be the better opening for the Delta conversation.",
       "action": "Sequence after Bravo pilot closes. Use Bravo outcome as cost evidence credibility. Prepare activity data pack for Delta repricing meeting in Month 3."
     },
