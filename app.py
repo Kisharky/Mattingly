@@ -45,8 +45,11 @@ st.set_page_config(
 WAREHOUSE_ID    = "WH001"
 WAREHOUSE_NAME  = "Warehouse 1 — National Network"
 RECOVERY_TARGET = 1_150_000
-TOTAL_EXPOSURE  = 1_860_000   # conservative floor (at $0.265/pick) — use this as headline
-TOTAL_EXPOSURE_STRICT = 2_094_982  # engine-verified (at $0.284/pick)
+PRICING_EXPOSURE     = 1_860_000   # pricing/unbilled conservative floor ($0.265/pick)
+OPS_EXPOSURE         = 795_000     # operational: F014 $446K exception drain + F015 $349K urgent penalty
+TOTAL_EXPOSURE       = 1_860_000   # kept at pricing floor for recovery math (see TOTAL_OPPORTUNITY for all-in)
+TOTAL_OPPORTUNITY    = PRICING_EXPOSURE + OPS_EXPOSURE   # $2.655M — headline on CEO dashboard
+TOTAL_EXPOSURE_STRICT = 2_094_982  # engine-verified pricing only ($0.284/pick)
 
 # Data confidence per finding (engine-verified = HIGH)
 CONFIDENCE_MAP = {
@@ -122,7 +125,8 @@ Mattingly's reported margin is ~96% per customer — but this is wrong. Activity
 ## KEY FINANCIAL FACTS
 - True pick cost (ABC): $0.265/pick (EXACT — do not change this figure)
 - Network average charge: ~$0.14/pick
-- Total exposure identified: $1.86M/year (conservative at $0.265/pick; engine-strict $2.09M at $0.284/pick)
+- Total opportunity identified: $2.65M/year ($1.86M pricing/unbilled + $0.80M operational efficiency)
+- Pricing exposure alone: $1.86M conservative ($0.265/pick floor); engine-strict $2.09M ($0.284/pick)
 - Recovery target: $1,150,000 over 9 months (exact)
 - Exception rate at Delta: 14.1% vs 5.8% network average (2.4x higher)
 - 4 days of labour data missing (data hygiene issue)
@@ -742,7 +746,9 @@ Month 1 is the unlock. Win Bravo and you have cost evidence that makes every sub
     },
     {
         "keys": ["total exposure","how much","1.86","total loss"],
-        "answer": """**Total exposure identified: $1.86M/year** (conservative floor at $0.265/pick; strict engine: $2.09M at $0.284/pick)
+        "answer": """**Total opportunity identified: $2.65M/year** ($1.86M pricing/unbilled exposure + $0.80M operational efficiency)
+
+Pricing floor at $0.265/pick: $1.86M. Engine-strict at $0.284/pick: $2.09M pricing only.
 
 Breakdown:
 - Pricing leakage (all customers below true cost): ~$640K+ annualised
@@ -831,10 +837,66 @@ def _ticket_row(t):
     </div>
     """, unsafe_allow_html=True)
 
+
+# ── NOTIFICATIONS PANEL (live activity + who was alerted) ─────────────────
+def _notifications_panel(role):
+    """Show recent ticket events + role-based notification log."""
+    changed = get_what_changed()
+
+    # Static notification log — matches the verified findings/ticket flow
+    NOTIF_LOG = [
+        ("CEO",             "✅", "#5DBF8A", "ABC costing complete — 13 findings, $2.65M opportunity mapped",          "Month 1 · All roles"),
+        ("Commercial Lead", "📨", "#5DBF8A", "Bravo FMCG brief sent — $144K/yr repricing case, data package attached",  "Month 1 · CEO approval pending"),
+        ("Site Manager",    "🚨", "#FF6B6B", "Delta Manufacturing flagged — exception drain 3.9× peers, $446K/yr",       "Month 1 · Auto-detected"),
+        ("Site Manager",    "⚠️", "#F8B840", "Urgent order premium flagged — 2.35× throughput penalty, $349K/yr",        "Month 1 · Auto-detected"),
+        ("Commercial Lead", "📋", "#F8B840", "Charlie Medical rebilling — $127K unbilled, evidence gathering started",    "Month 1 · In progress"),
+        ("CEO",             "🔴", "#FF6B6B", "Decision required: Bravo FMCG pilot approval — Month 1 deadline",          "Awaiting approval"),
+    ]
+
+    # Filter to role (CEO sees all; others see own + CEO's)
+    def _relevant(n):
+        if role == "CEO":
+            return True
+        return n[0] in (role, "CEO")
+
+    visible = [n for n in NOTIF_LOG if _relevant(n)]
+
+    # Recent DB changes
+    db_events = []
+    for ch in changed:
+        sc = STATUS_COLOR.get(ch["status"], C_MUTED)
+        imp = fmt_dollars(ch["dollar_impact"]) if ch["dollar_impact"] > 0 else ""
+        db_events.append((sc, ch["title"][:60], imp, ch["updated_at"][:10]))
+
+    with st.expander(f"📬 Notifications & Activity ({len(visible) + len(db_events)} items)", expanded=False):
+        if db_events:
+            st.markdown(f"<div style='font-size:9px;letter-spacing:2px;color:{C_MUTED};font-weight:700;margin-bottom:8px'>RECENT TICKET ACTIVITY</div>", unsafe_allow_html=True)
+            for sc, title, imp, date in db_events:
+                st.markdown(
+                    f"<div style='display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid {C_DIVIDER}'>"
+                    f"<div style='width:7px;height:7px;border-radius:50%;background:{sc};flex-shrink:0'></div>"
+                    f"<div style='flex:1;font-size:12px;color:{C_TEXT}'>{title}</div>"
+                    f"<div style='font-size:11px;font-weight:600;color:{C_GREEN};white-space:nowrap'>{imp}</div>"
+                    f"<div style='font-size:10px;color:{C_MUTED};white-space:nowrap'>{date}</div>"
+                    f"</div>", unsafe_allow_html=True)
+            st.markdown("<br>", unsafe_allow_html=True)
+
+        st.markdown(f"<div style='font-size:9px;letter-spacing:2px;color:{C_MUTED};font-weight:700;margin-bottom:8px'>SYSTEM NOTIFICATIONS — WHO WAS ALERTED</div>", unsafe_allow_html=True)
+        for target_role, icon, color, msg, timing in visible:
+            st.markdown(
+                f"<div style='display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid {C_DIVIDER}'>"
+                f"<div style='font-size:16px;flex-shrink:0'>{icon}</div>"
+                f"<div style='flex:1'>"
+                f"<div style='font-size:11px;font-weight:600;color:{color}'>{target_role}</div>"
+                f"<div style='font-size:12px;color:{C_TEXT};margin-top:1px'>{msg}</div>"
+                f"<div style='font-size:10px;color:{C_MUTED};margin-top:2px'>{timing}</div>"
+                f"</div></div>", unsafe_allow_html=True)
+
+
 def _what_changed_visual():
     changed = get_what_changed()
     timeline_items = [
-        ("Month 1", "ABC costing complete — 10 findings, 10 tickets generated", "$1.86M total exposure mapped (conservative floor)", C_GREEN, True),
+        ("Month 1", "ABC costing complete — 13 findings, 10 tickets generated", "$2.65M opportunity mapped ($1.86M pricing + $0.80M ops)", C_GREEN, True),
         ("Month 1", "Bravo FMCG repricing approved", "Month 1 pilot — $144K/yr recovery", C_AMBER, False),
         ("Month 2", "Delta Manufacturing evidence gathering", "Exception log review in progress", C_AMBER, False),
         ("Month 3", "Delta repricing + Charlie rebilling", "$272K incremental → $416K cumulative", C_MUTED, False),
@@ -910,7 +972,7 @@ def _ask_groq_quick(question, role):
         return "9-month plan: Month 1 Bravo $144K → Month 3 Delta+Charlie $416K cumulative → Month 6 WH002+WH003 $850K → Month 9 full network $1.15M. Data hygiene must close before Month 2 negotiations begin."
     if "hygiene" in q_low or "data" in q_low:
         return "Two open hygiene items: F006 (validate findings vs 12-month history) and F007 (close 4-day labour data gap). Both must be resolved **before** Commercial Lead opens any customer negotiation. Estimated 1 week to resolve."
-    return f"Based on ABC costing analysis: true pick cost is $0.265/pick across all customers. Network average charge is ~$0.14/pick. Total exposure: $1.86M/yr (conservative floor). Recovery target: $1.15M over 9 months. Bravo FMCG is Month 1 priority."
+    return f"Based on ABC costing analysis: true pick cost is $0.265/pick across all customers. Network average charge is ~$0.14/pick. Total opportunity: $2.65M/yr ($1.86M pricing + $0.80M ops). Recovery target: $1.15M pricing over 9 months. Bravo FMCG is Month 1 priority."
 
 def _mini_qa(role):
     """Compact AI Q&A panel — embedded in Dashboard for each role"""
@@ -1156,7 +1218,7 @@ def page_dashboard():
         <div style='flex:1;padding:10px 14px'>
           <div style='font-size:18px;margin-bottom:6px'>💰</div>
           <div style='font-size:11px;font-weight:700;color:#FFFFFF;margin-bottom:4px'>4. RECOVER</div>
-          <div style='font-size:11px;color:#8FBF9F;line-height:1.5'>Closing tickets moves the recovery bar. Target: <strong style='color:#5DBF8A'>$1.15M in 9 months</strong> from $1.86M identified across 30 customers.</div>
+          <div style='font-size:11px;color:#8FBF9F;line-height:1.5'>Closing tickets moves the recovery bar. Target: <strong style='color:#5DBF8A'>$1.15M in 9 months</strong> from $2.65M total opportunity ($1.86M pricing + $0.80M operational) across 30 customers.</div>
         </div>
       </div>
     </div>
@@ -1170,7 +1232,7 @@ def page_dashboard():
         ), unsafe_allow_html=True)
 
         k1, k2, k3, k4 = st.columns(4)
-        k1.markdown(kpi_card("Total Exposure", fmt_dollars(TOTAL_EXPOSURE), "Annual profit at risk", C_RED), unsafe_allow_html=True)
+        k1.markdown(kpi_card("Total Opportunity", "$2.65M", f"Pricing $1.86M · Ops $0.80M (see Operations page)", C_RED), unsafe_allow_html=True)
         k2.markdown(kpi_card("Recovered to Date", fmt_dollars(stats["recovered"]), f"{pct:.1f}% of $1.15M target", C_GREEN), unsafe_allow_html=True)
         high_priority = sum(1 for t in all_tickets if t["priority"] in ("HIGH","CRITICAL") and t["status"] != "Done")
         k3.markdown(kpi_card("High-Priority Open", str(high_priority), "Requiring CEO decision"), unsafe_allow_html=True)
@@ -1213,34 +1275,68 @@ def page_dashboard():
         </div>
         """, unsafe_allow_html=True)
 
-        # MOS CADENCE — CEO (Monthly)
-        st.markdown("""
-        <div style='background:#1A3D2B;border-radius:4px;padding:16px 20px;margin-bottom:20px'>
-          <div style='font-size:9px;letter-spacing:2px;color:#6B9E83;font-weight:700;margin-bottom:10px'>
-            MANAGEMENT OPERATING SYSTEM &nbsp;&nbsp;|&nbsp;&nbsp; CEO &nbsp;&middot;&nbsp; MONTHLY CADENCE
-          </div>
-          <div style='display:flex;gap:0;border-radius:3px;overflow:hidden'>
-            <div style='flex:1;padding:10px 14px;background:rgba(255,255,255,0.04);border-right:1px solid rgba(255,255,255,0.08)'>
-              <div style='font-size:9px;color:#6B9E83;font-weight:700;letter-spacing:1px;margin-bottom:5px'>MONTHLY REVIEW</div>
-              <div style='font-size:11px;color:#C8DDD2;line-height:1.6'>
-                Portfolio health review<br>Approve / decline pricing proposals<br>Sign off recovery progress vs $1.15M target
+        _notifications_panel(role)
+
+        # MOS CADENCE — CEO (tabs: Monthly / Quarterly / Annual)
+        st.markdown("<div style='font-size:9px;letter-spacing:2px;color:#6B9E83;font-weight:700;margin-bottom:6px'>MANAGEMENT OPERATING SYSTEM &nbsp;·&nbsp; CEO</div>", unsafe_allow_html=True)
+        _ceo_tab_m, _ceo_tab_q, _ceo_tab_a = st.tabs(["📅 Monthly", "📊 Quarterly", "🗓 Annual"])
+        with _ceo_tab_m:
+            st.markdown("""
+            <div style='background:#1A3D2B;border-radius:4px;padding:14px 18px;margin-top:8px;margin-bottom:4px'>
+              <div style='display:flex;gap:0;border-radius:3px;overflow:hidden'>
+                <div style='flex:1;padding:10px 14px;background:rgba(255,255,255,0.04);border-right:1px solid rgba(255,255,255,0.08)'>
+                  <div style='font-size:9px;color:#6B9E83;font-weight:700;letter-spacing:1px;margin-bottom:5px'>REVIEW</div>
+                  <div style='font-size:11px;color:#C8DDD2;line-height:1.6'>Portfolio health<br>Approve / decline proposals<br>Recovery progress vs $1.15M</div>
+                </div>
+                <div style='flex:1;padding:10px 14px;background:rgba(255,255,255,0.07);border-right:1px solid rgba(255,255,255,0.08)'>
+                  <div style='font-size:9px;color:#F8B840;font-weight:700;letter-spacing:1px;margin-bottom:5px'>THIS MONTH — ACTION</div>
+                  <div style='font-size:11px;color:#C8DDD2;line-height:1.6'>✅ Approve Bravo pilot ($144K)<br>📋 Review Delta evidence<br>📋 Confirm Month 3 authority</div>
+                </div>
+                <div style='flex:1;padding:10px 14px;background:rgba(255,255,255,0.04)'>
+                  <div style='font-size:9px;color:#5DBF8A;font-weight:700;letter-spacing:1px;margin-bottom:5px'>NEXT MONTH — PREPARE</div>
+                  <div style='font-size:11px;color:#C8DDD2;line-height:1.6'>Delta brief from GM Sales<br>Charlie rebilling sign-off<br>WH002 readiness check</div>
+                </div>
               </div>
             </div>
-            <div style='flex:1;padding:10px 14px;background:rgba(255,255,255,0.07);border-right:1px solid rgba(255,255,255,0.08)'>
-              <div style='font-size:9px;color:#F8B840;font-weight:700;letter-spacing:1px;margin-bottom:5px'>THIS MONTH — DECISION</div>
-              <div style='font-size:11px;color:#C8DDD2;line-height:1.6'>
-                Approve Bravo FMCG pilot ($144K)<br>Review Delta evidence package<br>Confirm Month 3 negotiation authority
+            """, unsafe_allow_html=True)
+        with _ceo_tab_q:
+            st.markdown("""
+            <div style='background:#1A3D2B;border-radius:4px;padding:14px 18px;margin-top:8px;margin-bottom:4px'>
+              <div style='display:flex;gap:0;border-radius:3px;overflow:hidden'>
+                <div style='flex:1;padding:10px 14px;background:rgba(255,255,255,0.04);border-right:1px solid rgba(255,255,255,0.08)'>
+                  <div style='font-size:9px;color:#6B9E83;font-weight:700;letter-spacing:1px;margin-bottom:5px'>Q1 MILESTONE</div>
+                  <div style='font-size:11px;color:#C8DDD2;line-height:1.6'>Bravo $144K closed (Month 2)<br>Delta evidence complete<br>Site 1 data hygiene cleared</div>
+                </div>
+                <div style='flex:1;padding:10px 14px;background:rgba(255,255,255,0.07);border-right:1px solid rgba(255,255,255,0.08)'>
+                  <div style='font-size:9px;color:#F8B840;font-weight:700;letter-spacing:1px;margin-bottom:5px'>Q2 MILESTONE</div>
+                  <div style='font-size:11px;color:#C8DDD2;line-height:1.6'>Delta + Charlie closed → $416K<br>Ops efficiency program started<br>WH002 onboarding begins</div>
+                </div>
+                <div style='flex:1;padding:10px 14px;background:rgba(255,255,255,0.04)'>
+                  <div style='font-size:9px;color:#5DBF8A;font-weight:700;letter-spacing:1px;margin-bottom:5px'>Q3–Q4 HORIZON</div>
+                  <div style='font-size:11px;color:#C8DDD2;line-height:1.6'>WH002+WH003 → $850K<br>Exception pool target: &lt;15%<br>Full network rollout review</div>
+                </div>
               </div>
             </div>
-            <div style='flex:1;padding:10px 14px;background:rgba(255,255,255,0.04)'>
-              <div style='font-size:9px;color:#5DBF8A;font-weight:700;letter-spacing:1px;margin-bottom:5px'>NEXT MONTH — PREPARE</div>
-              <div style='font-size:11px;color:#C8DDD2;line-height:1.6'>
-                Delta repricing brief from GM Sales<br>Charlie rebilling policy sign-off<br>WH002 onboarding readiness check
+            """, unsafe_allow_html=True)
+        with _ceo_tab_a:
+            st.markdown("""
+            <div style='background:#1A3D2B;border-radius:4px;padding:14px 18px;margin-top:8px;margin-bottom:4px'>
+              <div style='display:flex;gap:0;border-radius:3px;overflow:hidden'>
+                <div style='flex:1;padding:10px 14px;background:rgba(255,255,255,0.04);border-right:1px solid rgba(255,255,255,0.08)'>
+                  <div style='font-size:9px;color:#6B9E83;font-weight:700;letter-spacing:1px;margin-bottom:5px'>YEAR-END TARGET</div>
+                  <div style='font-size:11px;color:#C8DDD2;line-height:1.6'>$1.15M pricing recovery<br>$2.65M total opportunity mapped<br>All 3 sites on Profit Lens</div>
+                </div>
+                <div style='flex:1;padding:10px 14px;background:rgba(255,255,255,0.07);border-right:1px solid rgba(255,255,255,0.08)'>
+                  <div style='font-size:9px;color:#F8B840;font-weight:700;letter-spacing:1px;margin-bottom:5px'>BOARD METRICS</div>
+                  <div style='font-size:11px;color:#C8DDD2;line-height:1.6'>True margin by customer live<br>Exception rate &lt;10% network<br>Pick cost vs contract tracked</div>
+                </div>
+                <div style='flex:1;padding:10px 14px;background:rgba(255,255,255,0.04)'>
+                  <div style='font-size:9px;color:#5DBF8A;font-weight:700;letter-spacing:1px;margin-bottom:5px'>STRATEGIC OUTCOME</div>
+                  <div style='font-size:11px;color:#C8DDD2;line-height:1.6'>Activity-based pricing standard<br>Operational data as asset<br>Platform for network expansion</div>
+                </div>
               </div>
             </div>
-          </div>
-        </div>
-        """, unsafe_allow_html=True)
+            """, unsafe_allow_html=True)
 
         _render_next_action(role, all_tickets)
 
@@ -1353,7 +1449,7 @@ def page_dashboard():
                         f"<div style='font-size:10px;color:{C_MUTED};margin-top:4px;padding:6px 10px;"
                         f"background:{C_CARD};border-radius:3px;border-left:2px solid {C_MUTED}'>"
                         f"⚠ Excludes F011 Structural ($1.49M network-wide) — contains F001/F002/F003 above. "
-                        f"No double-count. Total exposure: $1.86M conservative.</div>",
+                        f"No double-count. Pricing exposure: $1.86M conservative. Add ops opportunity $0.80M → $2.65M total.</div>",
                         unsafe_allow_html=True)
 
     # ── COMMERCIAL LEAD view ──────────────────────────────────
@@ -1374,6 +1470,8 @@ def page_dashboard():
         k3.markdown(kpi_card("Closed Value", fmt_dollars(closed_val) if closed_val else "$0", "Deals closed this period", C_GREEN), unsafe_allow_html=True)
         k4.markdown(kpi_card("Month 1 Priority", "$144K", "Bravo FMCG — approve to proceed", C_BLUE), unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
+
+        _notifications_panel(role)
 
         # MOS CADENCE — Commercial Lead (Weekly)
         st.markdown("""
@@ -1492,6 +1590,8 @@ def page_dashboard():
         k4.markdown(kpi_card("True Pick Cost", "$0.265/pick", "All-in labour cost (ABC analysis)", C_RED), unsafe_allow_html=True)
         k5.markdown(kpi_card("Completed by You", str(len(done_mine)), "Tickets resolved this period", C_GREEN), unsafe_allow_html=True)
         st.markdown("<br>", unsafe_allow_html=True)
+
+        _notifications_panel(role)
 
         # MOS CADENCE — Site Manager (Daily)
         st.markdown("""
@@ -1897,7 +1997,7 @@ def page_action_queue():
         q = search.strip().lower()
         tickets = [t for t in tickets if q in (t["title"] or "").lower() or q in (t["customer"] or "").lower()]
 
-    total_d = sum(t["dollar_impact"] for t in tickets if t["dollar_impact"] > 0)
+    total_d = sum(t["dollar_impact"] for t in tickets if t["dollar_impact"] > 0 and t.get("finding_id") != "F011")
     st.caption(f"{len(tickets)} tickets &nbsp;·&nbsp; {fmt_dollars(total_d)} total impact")
 
     if not tickets:
@@ -2042,7 +2142,7 @@ def page_recovery():
     st.markdown("<br>", unsafe_allow_html=True)
 
     # ── Opportunity Reconciliation ─────────────────────────
-    with st.expander("📊 How Total Opportunity Is Calculated — $1.86M (conservative) / $2.09M (engine-strict)", expanded=False):
+    with st.expander("📊 How Total Opportunity Is Calculated — $2.65M all-in ($1.86M pricing + $0.80M ops) / $2.09M pricing strict", expanded=False):
         st.markdown("""
         <div style='background:#0D2B1A;border-radius:6px;padding:16px 20px;margin-bottom:10px'>
           <div style='font-size:9px;letter-spacing:2px;color:#6B9E83;font-weight:700;margin-bottom:12px'>
@@ -2131,7 +2231,7 @@ def page_recovery():
 
     with right:
         st.markdown("### Open Pipeline")
-        open_t = [t for t in db.get_tickets(WAREHOUSE_ID) if t["status"] != "Done" and t["dollar_impact"] > 0]
+        open_t = [t for t in db.get_tickets(WAREHOUSE_ID) if t["status"] != "Done" and t["dollar_impact"] > 0 and t.get("finding_id") != "F011"]
         if open_t:
             total_open = sum(t["dollar_impact"] for t in open_t)
             st.caption(f"{len(open_t)} open &nbsp;·&nbsp; {fmt_dollars(total_open)} pipeline")
