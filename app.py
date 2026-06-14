@@ -840,40 +840,38 @@ def _ticket_row(t):
 
 # ── NOTIFICATIONS PANEL (live activity + who was alerted) ─────────────────
 def _notifications_panel(role):
-    """Show recent ticket events + role-based notification log."""
+    """AI-powered notification panel — Groq generates situational brief from live ticket data."""
     changed = get_what_changed()
 
-    # Static notification log — matches the verified findings/ticket flow
-    NOTIF_LOG = [
+    # Fallback static log (shown when Groq unavailable)
+    STATIC_LOG = [
         ("CEO",             "✅", "#5DBF8A", "ABC costing complete — 13 findings, $2.65M opportunity mapped",          "Month 1 · All roles"),
-        ("Commercial Lead", "📨", "#5DBF8A", "Bravo FMCG brief sent — $144K/yr repricing case, data package attached",  "Month 1 · CEO approval pending"),
-        ("Site Manager",    "🚨", "#FF6B6B", "Delta Manufacturing flagged — exception drain 3.9× peers, $446K/yr",       "Month 1 · Auto-detected"),
-        ("Site Manager",    "⚠️", "#F8B840", "Urgent order premium flagged — 2.35× throughput penalty, $349K/yr",        "Month 1 · Auto-detected"),
-        ("Commercial Lead", "📋", "#F8B840", "Charlie Medical rebilling — $127K unbilled, evidence gathering started",    "Month 1 · In progress"),
-        ("CEO",             "🔴", "#FF6B6B", "Decision required: Bravo FMCG pilot approval — Month 1 deadline",          "Awaiting approval"),
+        ("Commercial Lead", "📨", "#5DBF8A", "Bravo FMCG brief sent — $144K/yr repricing, CEO approval pending",       "Month 1 · Awaiting"),
+        ("Site Manager",    "🚨", "#FF6B6B", "Delta Manufacturing flagged — exception drain 3.9× peers, $446K/yr",      "Month 1 · Auto-detected"),
+        ("Site Manager",    "⚠️", "#F8B840", "Urgent order premium flagged — 2.35× throughput, $349K/yr",              "Month 1 · Auto-detected"),
+        ("Commercial Lead", "📋", "#F8B840", "Charlie Medical — $127K unbilled, evidence gathering started",            "Month 1 · In progress"),
+        ("CEO",             "🔴", "#FF6B6B", "Decision required: Bravo FMCG pilot approval — Month 1 deadline",        "Awaiting approval"),
     ]
 
-    # Filter to role (CEO sees all; others see own + CEO's)
-    def _relevant(n):
-        if role == "CEO":
-            return True
-        return n[0] in (role, "CEO")
-
-    visible = [n for n in NOTIF_LOG if _relevant(n)]
-
-    # Recent DB changes
     db_events = []
     for ch in changed:
-        sc = STATUS_COLOR.get(ch["status"], C_MUTED)
+        sc  = STATUS_COLOR.get(ch["status"], C_MUTED)
         imp = fmt_dollars(ch["dollar_impact"]) if ch["dollar_impact"] > 0 else ""
         db_events.append((sc, ch["title"][:60], imp, ch["updated_at"][:10]))
 
-    with st.expander(f"📬 Notifications & Activity ({len(visible) + len(db_events)} items)", expanded=False):
+    total_items = len(db_events) + len([n for n in STATIC_LOG if role == "CEO" or n[0] in (role, "CEO")])
+
+    with st.expander(f"📬 Notifications & Activity ({total_items} items)", expanded=False):
+
+        # ── Live ticket activity (from DB) ────────────────────
         if db_events:
-            st.markdown(f"<div style='font-size:9px;letter-spacing:2px;color:{C_MUTED};font-weight:700;margin-bottom:8px'>RECENT TICKET ACTIVITY</div>", unsafe_allow_html=True)
+            st.markdown(
+                f"<div style='font-size:9px;letter-spacing:2px;color:{C_MUTED};font-weight:700;"
+                f"margin-bottom:8px'>RECENT TICKET ACTIVITY</div>", unsafe_allow_html=True)
             for sc, title, imp, date in db_events:
                 st.markdown(
-                    f"<div style='display:flex;gap:10px;align-items:center;padding:7px 0;border-bottom:1px solid {C_DIVIDER}'>"
+                    f"<div style='display:flex;gap:10px;align-items:center;padding:7px 0;"
+                    f"border-bottom:1px solid {C_DIVIDER}'>"
                     f"<div style='width:7px;height:7px;border-radius:50%;background:{sc};flex-shrink:0'></div>"
                     f"<div style='flex:1;font-size:12px;color:{C_TEXT}'>{title}</div>"
                     f"<div style='font-size:11px;font-weight:600;color:{C_GREEN};white-space:nowrap'>{imp}</div>"
@@ -881,16 +879,89 @@ def _notifications_panel(role):
                     f"</div>", unsafe_allow_html=True)
             st.markdown("<br>", unsafe_allow_html=True)
 
-        st.markdown(f"<div style='font-size:9px;letter-spacing:2px;color:{C_MUTED};font-weight:700;margin-bottom:8px'>SYSTEM NOTIFICATIONS — WHO WAS ALERTED</div>", unsafe_allow_html=True)
-        for target_role, icon, color, msg, timing in visible:
-            st.markdown(
-                f"<div style='display:flex;gap:10px;align-items:flex-start;padding:9px 0;border-bottom:1px solid {C_DIVIDER}'>"
-                f"<div style='font-size:16px;flex-shrink:0'>{icon}</div>"
-                f"<div style='flex:1'>"
-                f"<div style='font-size:11px;font-weight:600;color:{color}'>{target_role}</div>"
-                f"<div style='font-size:12px;color:{C_TEXT};margin-top:1px'>{msg}</div>"
-                f"<div style='font-size:10px;color:{C_MUTED};margin-top:2px'>{timing}</div>"
-                f"</div></div>", unsafe_allow_html=True)
+        # ── AI Situational Brief (Groq-powered) ──────────────
+        st.markdown(
+            f"<div style='font-size:9px;letter-spacing:2px;color:{C_MUTED};font-weight:700;"
+            f"margin-bottom:8px'>AI SITUATIONAL BRIEF</div>", unsafe_allow_html=True)
+
+        cache_key = f"_ai_brief_{role}"
+        col_hdr, col_btn = st.columns([5, 1])
+        with col_btn:
+            regen = st.button("↻ Refresh", key=f"notif_regen_{role}", help="Regenerate AI brief from current ticket data")
+
+        if _GROQ_AVAILABLE and GROQ_API_KEY:
+            if cache_key not in st.session_state or regen:
+                try:
+                    all_t = db.get_tickets(WAREHOUSE_ID)
+                    open_t = [t for t in all_t if t["status"] != "Done" and t.get("finding_id") != "F011"]
+                    done_t = [t for t in all_t if t["status"] == "Done"]
+                    recovered = sum(t["dollar_impact"] for t in done_t if t["dollar_impact"] > 0)
+
+                    ticket_lines = []
+                    for t in sorted(open_t, key=lambda x: -x["dollar_impact"])[:8]:
+                        ticket_lines.append(
+                            f"  - [{t['priority']}] {t['title']} | ${t['dollar_impact']:,.0f} | "
+                            f"{t['status']} | Owner: {t['assigned_role']}"
+                        )
+                    ticket_ctx = "\n".join(ticket_lines) if ticket_lines else "  (no open tickets)"
+
+                    prompt = (
+                        f"You are Profit Lens, an AI operations assistant for Mattingly Logistics warehouse WH001. "
+                        f"Write a concise situational notification brief for the {role}. "
+                        f"Current state: ${recovered:,.0f} recovered of $1,150,000 target. "
+                        f"Open tickets (highest impact first):\n{ticket_ctx}\n\n"
+                        f"Write 4-5 specific, actionable notification bullets. Each bullet: who needs to act, "
+                        f"what exactly, dollar amount if relevant, urgency. No preamble, no headers. "
+                        f"Start each line with an emoji (🔴/🟡/🟢/📨/⚡). "
+                        f"Tailor to {role} perspective. Be specific about ticket names and amounts."
+                    )
+
+                    client = _Groq(api_key=GROQ_API_KEY)
+                    resp = client.chat.completions.create(
+                        model=GROQ_MODEL,
+                        messages=[
+                            {"role": "system", "content": "You generate concise operational notification briefs. Use exact numbers from context. No fluff."},
+                            {"role": "user",   "content": prompt}
+                        ],
+                        max_tokens=300,
+                        temperature=0.3,
+                    )
+                    ai_brief = resp.choices[0].message.content.strip()
+                    st.session_state[cache_key] = ai_brief
+                except Exception as e:
+                    st.session_state[cache_key] = None
+
+            ai_text = st.session_state.get(cache_key)
+            if ai_text:
+                for line in ai_text.split("\n"):
+                    line = line.strip()
+                    if not line:
+                        continue
+                    # Colour the line border based on leading emoji
+                    bc = C_RED if line.startswith("🔴") else (
+                         C_AMBER if line.startswith(("🟡","⚠","⚡")) else (
+                         C_GREEN if line.startswith(("🟢","✅","📨")) else C_MUTED))
+                    st.markdown(
+                        f"<div style='padding:8px 12px;margin-bottom:4px;border-radius:3px;"
+                        f"border-left:3px solid {bc};background:{bc}0D;"
+                        f"font-size:12px;color:{C_TEXT};line-height:1.6'>{line}</div>",
+                        unsafe_allow_html=True)
+            else:
+                st.info("Groq API call failed — check your API key in Streamlit secrets.")
+        else:
+            # Fallback: static log
+            for target_role, icon, color, msg, timing in STATIC_LOG:
+                if role != "CEO" and target_role not in (role, "CEO"):
+                    continue
+                st.markdown(
+                    f"<div style='display:flex;gap:10px;align-items:flex-start;padding:9px 0;"
+                    f"border-bottom:1px solid {C_DIVIDER}'>"
+                    f"<div style='font-size:16px;flex-shrink:0'>{icon}</div>"
+                    f"<div style='flex:1'>"
+                    f"<div style='font-size:11px;font-weight:600;color:{color}'>{target_role}</div>"
+                    f"<div style='font-size:12px;color:{C_TEXT};margin-top:1px'>{msg}</div>"
+                    f"<div style='font-size:10px;color:{C_MUTED};margin-top:2px'>{timing}</div>"
+                    f"</div></div>", unsafe_allow_html=True)
 
 
 def _what_changed_visual():
@@ -1294,7 +1365,7 @@ def page_dashboard():
                 </div>
                 <div style='flex:1;padding:10px 14px;background:rgba(255,255,255,0.04)'>
                   <div style='font-size:9px;color:#5DBF8A;font-weight:700;letter-spacing:1px;margin-bottom:5px'>NEXT MONTH — PREPARE</div>
-                  <div style='font-size:11px;color:#C8DDD2;line-height:1.6'>Delta brief from GM Sales<br>Charlie rebilling sign-off<br>WH002 readiness check</div>
+                  <div style='font-size:11px;color:#C8DDD2;line-height:1.6'>Delta brief from Commercial Lead<br>Charlie rebilling sign-off<br>WH002 readiness check</div>
                 </div>
               </div>
             </div>
@@ -1477,7 +1548,7 @@ def page_dashboard():
         st.markdown("""
         <div style='background:#1A3D2B;border-radius:4px;padding:16px 20px;margin-bottom:20px'>
           <div style='font-size:9px;letter-spacing:2px;color:#6B9E83;font-weight:700;margin-bottom:10px'>
-            MANAGEMENT OPERATING SYSTEM &nbsp;&nbsp;|&nbsp;&nbsp; GM SALES &nbsp;&middot;&nbsp; WEEKLY CADENCE
+            MANAGEMENT OPERATING SYSTEM &nbsp;&nbsp;|&nbsp;&nbsp; COMMERCIAL LEAD &nbsp;&middot;&nbsp; WEEKLY CADENCE
           </div>
           <div style='display:flex;gap:0;border-radius:3px;overflow:hidden'>
             <div style='flex:1;padding:10px 14px;background:rgba(255,255,255,0.04);border-right:1px solid rgba(255,255,255,0.08)'>
@@ -1609,7 +1680,7 @@ def page_dashboard():
             <div style='flex:1;padding:10px 14px;background:rgba(255,255,255,0.04);border-right:1px solid rgba(255,255,255,0.08)'>
               <div style='font-size:9px;color:#6B9E83;font-weight:700;letter-spacing:1px;margin-bottom:5px'>WEEKLY REPORT</div>
               <div style='font-size:11px;color:#C8DDD2;line-height:1.6'>
-                Submit corrected pick data to GM Sales<br>Exception root cause update<br>Labour data completeness check
+                Submit corrected pick data to Commercial Lead<br>Exception root cause update<br>Labour data completeness check
               </div>
             </div>
             <div style='flex:1;padding:10px 14px;background:rgba(255,255,255,0.04)'>
@@ -1997,14 +2068,33 @@ def page_action_queue():
         q = search.strip().lower()
         tickets = [t for t in tickets if q in (t["title"] or "").lower() or q in (t["customer"] or "").lower()]
 
-    total_d = sum(t["dollar_impact"] for t in tickets if t["dollar_impact"] > 0 and t.get("finding_id") != "F011")
-    st.caption(f"{len(tickets)} tickets &nbsp;·&nbsp; {fmt_dollars(total_d)} total impact")
+    # Separate F011 structural roll-up — shown as banner, not a line card
+    f011_tickets = [t for t in tickets if t.get("finding_id") == "F011"]
+    main_tickets = [t for t in tickets if t.get("finding_id") != "F011"]
+    total_d = sum(t["dollar_impact"] for t in main_tickets if t["dollar_impact"] > 0)
+    count_label = len(tickets)
+    st.caption(f"{count_label} tickets &nbsp;·&nbsp; {fmt_dollars(total_d)} actionable impact &nbsp;·&nbsp; excl. F011 structural roll-up")
 
-    if not tickets:
+    if f011_tickets:
+        for f11 in f011_tickets:
+            sc = STATUS_COLOR.get(f11["status"], C_MUTED)
+            st.markdown(
+                f"<div style='background:#0E1F1E;border:1px solid #1C4040;border-radius:4px;"
+                f"padding:10px 16px;margin-bottom:6px;display:flex;align-items:center;gap:12px'>"
+                f"<div style='font-size:10px;font-weight:700;color:#5DBF8A;letter-spacing:1px;"
+                f"background:#5DBF8A18;padding:2px 8px;border-radius:2px;white-space:nowrap'>STRUCTURAL ROLL-UP</div>"
+                f"<div style='flex:1;font-size:12px;color:#8FBF9F'>{f11['title']}</div>"
+                f"<div style='font-size:10px;color:#5D9E78;white-space:nowrap'>"
+                f"$1.49M included in F001/F002/F003 · no double-count</div>"
+                f"</div>",
+                unsafe_allow_html=True
+            )
+
+    if not main_tickets:
         st.info("No tickets match the current filters.")
         return
 
-    for t in tickets:
+    for t in main_tickets:
         imp      = fmt_dollars(t["dollar_impact"]) if t["dollar_impact"] > 0 else "—"
         sc       = STATUS_COLOR.get(t["status"], C_MUTED)
         pc       = PRIORITY_COLOR.get(t["priority"], C_MUTED)
@@ -2332,7 +2422,7 @@ def page_ai_assistant():
             f"<div style='background:{C_BLUE}12;border-left:3px solid {C_BLUE};"
             f"padding:10px 16px;border-radius:0 4px 4px 0;margin-bottom:16px;font-size:12px;color:{C_TEXT}'>"
             f"<b>Site Manager view:</b> Ask about data hygiene priorities, Delta exception "
-            f"investigation, pick count validation, or what to report to GM Sales this week.</div>"
+            f"investigation, pick count validation, or what to report to Commercial Lead this week.</div>"
         ),
     }
     _rnote = _role_notes.get(role, "")
@@ -2358,7 +2448,7 @@ def page_ai_assistant():
             "How do I reduce Delta exception rate below 5.8%?",
             "What are the data hygiene tasks I must complete first?",
             "How do I validate Charlie's pick count discrepancy?",
-            "What should I report to GM Sales this week?",
+            "What should I report to Commercial Lead this week?",
         ],
     }
     suggested = _role_qs.get(role, _role_qs["CEO"])
@@ -2558,7 +2648,7 @@ def page_load_data():
         <div style='text-align:center;flex:1;padding:8px'>
           <div style='font-size:20px;color:#5DBF8A;font-weight:700;margin-bottom:4px'>4</div>
           <div style='font-size:11px;color:#FFFFFF;font-weight:600;margin-bottom:2px'>Routed by Role</div>
-          <div style='font-size:10px;color:#8FBF9F'>CEO, GM Sales, Site Manager each see their queue</div>
+          <div style='font-size:10px;color:#8FBF9F'>CEO, Commercial Lead, Site Manager each see their queue</div>
         </div>
         <div style='color:#3D7A56;font-size:18px;font-weight:300;flex-shrink:0'>&#8594;</div>
         <div style='text-align:center;flex:1;padding:8px'>
