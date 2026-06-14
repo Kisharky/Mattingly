@@ -87,7 +87,7 @@ C_MUTED      = "#6B7280"
 C_DIVIDER    = "#E5E7EB"
 
 ROLES = {
-    "CEO":             {"color": C_GREEN,  "desc": "Recovery progress & portfolio decisions"},
+    "CEO":             {"color": C_GREEN,  "desc": "Profit opportunity & portfolio decisions"},
     "Commercial Lead": {"color": C_AMBER,  "desc": "Pricing & re-billing action queue"},
     "Site Manager":    {"color": C_BLUE,   "desc": "Operations, hygiene & exceptions"},
 }
@@ -127,7 +127,7 @@ Mattingly's reported margin is ~96% per customer — but this is wrong. Activity
 - Network average charge: ~$0.14/pick
 - Total opportunity identified: $2.65M/year ($1.86M pricing/unbilled + $0.80M operational efficiency)
 - Pricing exposure alone: $1.86M conservative ($0.265/pick floor); engine-strict $2.09M ($0.284/pick)
-- Recovery target: $1,150,000 over 9 months (exact)
+- Delivery target: $1,150,000 over 9 months (exact)
 - Exception rate at Delta: 14.1% vs 5.8% network average (2.4x higher)
 - 4 days of labour data missing (data hygiene issue)
 
@@ -136,7 +136,7 @@ Mattingly's reported margin is ~96% per customer — but this is wrong. Activity
 ### Bravo FMCG (C002) — HIGH PRIORITY
 - Annual picks: 2,000,000 | Revenue: $240,000/yr
 - Rate charged: $0.12/pick | True cost: $0.265/pick | Annual loss: $298,000
-- Recovery opportunity: $144,000 (repricing to $0.19)
+- Profit opportunity: $144,000 (repricing to $0.19)
 - Tag: "Scale Without Return" — more volume amplifies losses
 - True margin: 29.1% (reported: ~96%)
 - Action: REPRICE. Month 1 pilot.
@@ -502,7 +502,7 @@ with st.sidebar:
         ("Dashboard",             "Dashboard"),
         ("Customer Profitability","Customer Profitability"),
         ("Action Queue",          "Action Queue"),
-        ("Recovery Tracker",      "Recovery Tracker"),
+        ("Impact Tracker",      "Impact Tracker"),
         ("Operations",            "Operations & Bottlenecks"),
         ("Information Gaps",      "Information Gaps"),
         ("AI Assistant",          "Management Q&A"),
@@ -676,10 +676,10 @@ Their exception rate is also **14.1%** of volume vs a 5.8% network average — 2
 
 At $0.12/pick vs a true cost of $0.265, we lose **$0.145 on every pick**. Multiply by 2 million: **$298,000/year**. More volume means larger losses. That is what "Scale Without Return" means.
 
-The fix: reprice to **$0.19/pick** (a negotiable halfway step). Recovery: **$144,000/yr**. Bravo still gets a competitive rate; we get a defensible margin.
+The fix: reprice to **$0.19/pick** (a negotiable halfway step). Impact: **$144,000/yr**. Bravo still gets a competitive rate; we get a defensible margin.
 
 **Next step:** This is the Month 1 pilot. Close it first. It generates the cost evidence needed for every subsequent repricing.""",
-        "chips": ["Customer Profitability", "Recovery Tracker"]
+        "chips": ["Customer Profitability", "Impact Tracker"]
     },
     {
         "keys": ["c026","epsilon","underutilised","fixed fee"],
@@ -723,15 +723,15 @@ None of these block the Bravo repricing (rates are unambiguous). They matter mor
     {
         "keys": ["focus","priority","where to start","what should i"],
         "answer_by_role": {
-            "CEO": "**Your priority:** Approve the Bravo FMCG repricing pilot. Commercial Lead owns the negotiation. Ensure Site Manager closes the 4-day labour data gap before Month 2. Review the Recovery Tracker monthly — the system tells you if management is acting.",
+            "CEO": "**Your priority:** Approve the Bravo FMCG repricing pilot. Commercial Lead owns the negotiation. Ensure Site Manager closes the 4-day labour data gap before Month 2. Review the Impact Tracker monthly — the system tells you if management is acting.",
             "Commercial Lead": "**This week:** Bravo FMCG. Prepare the activity cost data pack and initiate the repricing conversation at $0.19/pick. That is $144,000/yr and the pilot that makes every subsequent negotiation credible. After Bravo: gather Delta and Charlie evidence.",
             "Site Manager": "**This week:** Close F006 (validate findings vs 12-month history) and F007 (recover 4 missing labour days). These are blockers for the Commercial Lead. Then run the Delta exception floor analysis (F008)."
         },
-        "chips": ["Action Queue", "Recovery Tracker"]
+        "chips": ["Action Queue", "Impact Tracker"]
     },
     {
         "keys": ["recovery plan","milestones","9 month","timeline"],
-        "answer": """**9-Month Recovery Plan**
+        "answer": """**9-Month Delivery Plan**
 
 | Month | Action | Cumulative |
 |-------|--------|-----------|
@@ -742,7 +742,7 @@ None of these block the Bravo repricing (rates are unambiguous). They matter mor
 | 9 | Full network — target achieved | $1,150,000 |
 
 Month 1 is the unlock. Win Bravo and you have cost evidence that makes every subsequent repricing conversation credible.""",
-        "chips": ["Recovery Tracker"]
+        "chips": ["Impact Tracker"]
     },
     {
         "keys": ["total exposure","how much","1.86","total loss"],
@@ -756,8 +756,8 @@ Breakdown:
 - Productivity & bottleneck: $62K/yr
 - Capacity underutilisation (Home & Living Products): $276K opportunity
 
-**Recovery target: $1,150,000 in 9 months** — the achievable portion through repricing and rebilling. The remainder closes through structural pricing reform in Months 3–6.""",
-        "chips": ["Customer Profitability", "Recovery Tracker"]
+**Delivery target: $1,150,000 in 9 months** — the achievable portion through repricing and rebilling. The remainder closes through structural pricing reform in Months 3–6.""",
+        "chips": ["Customer Profitability", "Impact Tracker"]
     },
     {
         "keys": ["profitable","is each customer","every customer","all customers"],
@@ -785,7 +785,7 @@ def get_ai_response(query, role):
         "The question is outside my pre-built knowledge base. Key facts:\n\n"
         "- **True pick cost:** $0.265/pick (exact, validated via ABC)\n"
         "- **Total exposure:** $1.86M/yr across all customers\n"
-        "- **Recovery target:** $1,150,000 over 9 months\n"
+        "- **Delivery target:** $1,150,000 over 9 months\n"
         "- **Month 1 priority:** Bravo FMCG repricing ($144K)\n"
         "- **Largest exposure:** Delta Manufacturing ($345K combined)\n\n"
         "Try: *Which customer has the biggest problem?* or *What information is missing?*"
@@ -1032,7 +1032,7 @@ def _ask_groq_quick(question, role):
     # Rule-based fallback
     q_low = question.lower()
     if "bravo" in q_low:
-        return "**Bravo FMCG (C002)** is Month 1 priority. Rate $0.12 vs true cost $0.265 = **$298K/yr loss**. Recovery opportunity: $144K by repricing to $0.19. CEO approval needed. Start pilot immediately — use 3-month review clause."
+        return "**Bravo FMCG (C002)** is Month 1 priority. Rate $0.12 vs true cost $0.265 = **$298K/yr loss**. Profit opportunity: $144K by repricing to $0.19. CEO approval needed. Start pilot immediately — use 3-month review clause."
     if "delta" in q_low:
         return "**Delta Manufacturing (C004)** has **$345K combined exposure** — $198K pricing leakage + $147K unbilled exceptions. Exception rate 14.1% vs 5.8% network average. Sequence after Bravo pilot. Site Manager must close hygiene tickets first."
     if "charlie" in q_low:
@@ -1043,7 +1043,7 @@ def _ask_groq_quick(question, role):
         return "9-month plan: Month 1 Bravo $144K → Month 3 Delta+Charlie $416K cumulative → Month 6 WH002+WH003 $850K → Month 9 full network $1.15M. Data hygiene must close before Month 2 negotiations begin."
     if "hygiene" in q_low or "data" in q_low:
         return "Two open hygiene items: F006 (validate findings vs 12-month history) and F007 (close 4-day labour data gap). Both must be resolved **before** Commercial Lead opens any customer negotiation. Estimated 1 week to resolve."
-    return f"Based on ABC costing analysis: true pick cost is $0.265/pick across all customers. Network average charge is ~$0.14/pick. Total opportunity: $2.65M/yr ($1.86M pricing + $0.80M ops). Recovery target: $1.15M pricing over 9 months. Bravo FMCG is Month 1 priority."
+    return f"Based on ABC costing analysis: true pick cost is $0.265/pick across all customers. Network average charge is ~$0.14/pick. Total opportunity: $2.65M/yr ($1.86M pricing + $0.80M ops). Delivery target: $1.15M pricing over 9 months. Bravo FMCG is Month 1 priority."
 
 def _mini_qa(role):
     """Compact AI Q&A panel — embedded in Dashboard for each role"""
@@ -1299,7 +1299,7 @@ def page_dashboard():
     if role == "CEO":
         st.markdown(page_header(
             "Executive Dashboard",
-            f"Recovery progress and portfolio decisions — {WAREHOUSE_NAME}"
+            f"Profit opportunity & delivery progress — {WAREHOUSE_NAME}"
         ), unsafe_allow_html=True)
 
         k1, k2, k3, k4 = st.columns(4)
@@ -1421,12 +1421,12 @@ def page_dashboard():
                   <div style='font-size:13px;font-weight:800;color:{C_TEXT}'>$0.265/pick</div>
                   <div style='font-size:10px;color:{C_MUTED};margin-top:2px'>True cost floor · all customers</div>
                 </div>
-                <div style='background:#1A1200;border-radius:3px;padding:8px 10px;border-left:3px solid {C_AMBER}'>
+                <div style='background:{C_AMBER_LITE};border-radius:3px;padding:8px 10px;border-left:3px solid {C_AMBER}'>
                   <div style='font-size:9px;color:{C_AMBER};font-weight:700;margin-bottom:3px'>TIER 2 · VOLUME CREDIT</div>
                   <div style='font-size:13px;font-weight:800;color:{C_TEXT}'>−10% @ &gt;1.5M picks</div>
                   <div style='font-size:10px;color:{C_MUTED};margin-top:2px'>$0.239 floor · rewards scale</div>
                 </div>
-                <div style='background:#1A0A0A;border-radius:3px;padding:8px 10px;border-left:3px solid {C_RED}'>
+                <div style='background:{C_RED_LITE};border-radius:3px;padding:8px 10px;border-left:3px solid {C_RED}'>
                   <div style='font-size:9px;color:{C_RED};font-weight:700;margin-bottom:3px'>TIER 3 · COMPLEXITY SURCHARGE</div>
                   <div style='font-size:13px;font-weight:800;color:{C_TEXT}'>+15% @ &gt;4% exception rate</div>
                   <div style='font-size:10px;color:{C_MUTED};margin-top:2px'>$0.305 · reflects true cost</div>
@@ -1440,7 +1440,7 @@ def page_dashboard():
                     <th style='text-align:right;color:{C_MUTED};padding:5px 0;font-weight:600'>Current</th>
                     <th style='text-align:right;color:{C_MUTED};padding:5px 0;font-weight:600'>Tier</th>
                     <th style='text-align:right;color:{C_MUTED};padding:5px 0;font-weight:600'>Proposed</th>
-                    <th style='text-align:right;color:{C_MUTED};padding:5px 0;font-weight:600'>Recovery</th>
+                    <th style='text-align:right;color:{C_MUTED};padding:5px 0;font-weight:600'>Impact</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -1477,36 +1477,36 @@ def page_dashboard():
         _render_next_action(role, all_tickets)
 
         # ── BEST / LIKELY / WORST (full-width, always visible) ────────
-        st.markdown(sec("Recovery Scenarios"), unsafe_allow_html=True)
+        st.markdown(sec("Outcome Scenarios"), unsafe_allow_html=True)
         st.markdown(f"""
         <div style='display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:6px'>
-          <div style='background:#1A0A0A;border:1px solid {{C_RED}}40;border-top:3px solid {{C_RED}};
+          <div style='background:{C_RED_LITE};border:1px solid {C_BORDER};border-top:3px solid {C_RED};
                       border-radius:4px;padding:14px 16px'>
-            <div style='font-size:9px;font-weight:700;color:{{C_RED}};letter-spacing:1px;margin-bottom:8px'>WORST CASE</div>
-            <div style='font-size:9px;color:{{C_MUTED}};margin-bottom:4px'>Bravo pilot stalls · No re-billing</div>
-            <div style='font-size:22px;font-weight:800;color:{{C_RED}};margin:6px 0'>$144K</div>
-            <div style='font-size:9px;color:{{C_MUTED}};margin-bottom:10px'>Year 1 recovery</div>
-            <div style='font-size:10px;color:{{C_MUTED}};line-height:1.6;border-top:1px solid {{C_BORDER}};padding-top:8px'>
+            <div style='font-size:9px;font-weight:700;color:{C_RED};letter-spacing:1px;margin-bottom:8px'>WORST CASE</div>
+            <div style='font-size:9px;color:{C_MUTED};margin-bottom:4px'>Bravo pilot stalls · No re-billing</div>
+            <div style='font-size:22px;font-weight:800;color:{C_RED};margin:6px 0'>$144K</div>
+            <div style='font-size:9px;color:{C_MUTED};margin-bottom:10px'>Year 1 impact</div>
+            <div style='font-size:10px;color:{C_MUTED};line-height:1.6;border-top:1px solid {C_BORDER};padding-top:8px'>
               Bravo at $0.19 only. Delta/Charlie delayed. Ops exposure untouched.
             </div>
           </div>
-          <div style='background:#1A1200;border:1px solid {{C_AMBER}}40;border-top:3px solid {{C_AMBER}};
+          <div style='background:{C_AMBER_LITE};border:1px solid {C_BORDER};border-top:3px solid {C_AMBER};
                       border-radius:4px;padding:14px 16px'>
-            <div style='font-size:9px;font-weight:700;color:{{C_AMBER}};letter-spacing:1px;margin-bottom:8px'>LIKELY CASE</div>
-            <div style='font-size:9px;color:{{C_MUTED}};margin-bottom:4px'>Bravo + re-billing + partial ops</div>
-            <div style='font-size:22px;font-weight:800;color:{{C_AMBER}};margin:6px 0'>$560K</div>
-            <div style='font-size:9px;color:{{C_MUTED}};margin-bottom:10px'>by Month 3</div>
-            <div style='font-size:10px;color:{{C_MUTED}};line-height:1.6;border-top:1px solid {{C_BORDER}};padding-top:8px'>
+            <div style='font-size:9px;font-weight:700;color:{C_AMBER};letter-spacing:1px;margin-bottom:8px'>LIKELY CASE</div>
+            <div style='font-size:9px;color:{C_MUTED};margin-bottom:4px'>Bravo + re-billing + partial ops</div>
+            <div style='font-size:22px;font-weight:800;color:{C_AMBER};margin:6px 0'>$560K</div>
+            <div style='font-size:9px;color:{C_MUTED};margin-bottom:10px'>by Month 3</div>
+            <div style='font-size:10px;color:{C_MUTED};line-height:1.6;border-top:1px solid {C_BORDER};padding-top:8px'>
               Bravo signed Month 1. Delta/Charlie re-billing Month 2–3. Exception study in flight.
             </div>
           </div>
-          <div style='background:#091A0E;border:1px solid {{C_GREEN}}40;border-top:3px solid {{C_GREEN}};
+          <div style='background:{C_GREEN_LITE};border:1px solid {C_BORDER};border-top:3px solid {C_GREEN};
                       border-radius:4px;padding:14px 16px'>
-            <div style='font-size:9px;font-weight:700;color:{{C_GREEN}};letter-spacing:1px;margin-bottom:8px'>BEST CASE</div>
-            <div style='font-size:9px;color:{{C_MUTED}};margin-bottom:4px'>Full 9-month rollout · Sites 2–3</div>
-            <div style='font-size:22px;font-weight:800;color:{{C_GREEN}};margin:6px 0'>$1.15M</div>
-            <div style='font-size:9px;color:{{C_MUTED}};margin-bottom:10px'>by Month 9</div>
-            <div style='font-size:10px;color:{{C_MUTED}};line-height:1.6;border-top:1px solid {{C_BORDER}};padding-top:8px'>
+            <div style='font-size:9px;font-weight:700;color:{C_GREEN};letter-spacing:1px;margin-bottom:8px'>BEST CASE</div>
+            <div style='font-size:9px;color:{C_MUTED};margin-bottom:4px'>Full 9-month rollout · Sites 2–3</div>
+            <div style='font-size:22px;font-weight:800;color:{C_GREEN};margin:6px 0'>$1.15M</div>
+            <div style='font-size:9px;color:{C_MUTED};margin-bottom:10px'>by Month 9</div>
+            <div style='font-size:10px;color:{C_MUTED};line-height:1.6;border-top:1px solid {C_BORDER};padding-top:8px'>
               All 3 pilots closed. Ops savings realised. Sites 2–3 on Profit Lens.
             </div>
           </div>
@@ -1589,7 +1589,7 @@ def page_dashboard():
                     </div>
                     """, unsafe_allow_html=True)
 
-            st.markdown(sec("Recovery Timeline"), unsafe_allow_html=True)
+            st.markdown(sec("Execution Roadmap"), unsafe_allow_html=True)
             _what_changed_visual()
             st.markdown("<br>", unsafe_allow_html=True)
             _mini_qa("CEO")
@@ -1761,7 +1761,7 @@ def page_dashboard():
             )
             st.plotly_chart(fig, use_container_width=True, config={"displayModeBar": False})
 
-            st.markdown(sec("Recovery Timeline"), unsafe_allow_html=True)
+            st.markdown(sec("Execution Roadmap"), unsafe_allow_html=True)
             _recovery_bar(stats, pct)
 
     # ── SITE MANAGER view ─────────────────────────────────────
@@ -2300,7 +2300,7 @@ def page_action_queue():
 # ═══════════════════════════════════════════════════════════
 def page_recovery():
     st.markdown(page_header(
-        "Recovery Tracker",
+        "Impact Tracker",
         "Closed loop — proof that management is acting, not just watching."
     ), unsafe_allow_html=True)
 
@@ -2346,7 +2346,7 @@ def page_recovery():
     pct       = min(recovered / RECOVERY_TARGET * 100, 100) if RECOVERY_TARGET else 0
 
     h1, h2, h3, h4 = st.columns(4)
-    h1.markdown(kpi_card("Recovered", fmt_dollars(recovered), "", C_GREEN), unsafe_allow_html=True)
+    h1.markdown(kpi_card("Captured", fmt_dollars(recovered), "", C_GREEN), unsafe_allow_html=True)
     h2.markdown(kpi_card("Remaining to Target", fmt_dollars(remaining)), unsafe_allow_html=True)
     h3.markdown(kpi_card("Progress", f"{pct:.1f}%", "of $1,150,000"), unsafe_allow_html=True)
     h4.markdown(kpi_card("Tickets Closed", str(stats["done_count"])), unsafe_allow_html=True)
@@ -2400,7 +2400,7 @@ def page_recovery():
 
     st.markdown("<br>", unsafe_allow_html=True)
     fig = go.Figure()
-    fig.add_trace(go.Bar(name="Recovered", x=[recovered], y=["Progress"], orientation="h",
+    fig.add_trace(go.Bar(name="Captured", x=[recovered], y=["Progress"], orientation="h",
         marker=dict(color=C_GREEN), text=[f"  {fmt_dollars(recovered)} ({pct:.1f}%)"],
         textposition="inside" if pct > 12 else "outside",
         textfont=dict(color="#fff", size=12, family="Inter"), width=[0.5]))
@@ -2467,7 +2467,7 @@ def page_recovery():
                 )
 
     st.markdown("---")
-    st.markdown(sec("Recovery Milestones — 9-Month Plan"), unsafe_allow_html=True)
+    st.markdown(sec("Delivery Plan — 9 Months"), unsafe_allow_html=True)
     milestones = [
         (1, "$144K",  "Bravo FMCG repricing at $0.19"),
         (2, "—",      "Delta/Charlie evidence"),
@@ -2895,7 +2895,7 @@ def page_load_data():
               <div style='font-size:9px;letter-spacing:2px;color:#6B9E83;font-weight:700;margin-bottom:8px'>
                 Upload the dataset above to run the live engine analysis.</div>
               <div style='font-size:11px;color:#A0C8B0;line-height:1.6'>
-                Pre-computed results from 13 Jun 2026 are shown in the Recovery Tracker reconciliation panel.
+                Pre-computed results from 13 Jun 2026 are shown in the Impact Tracker reconciliation panel.
               </div>
             </div>
             """, unsafe_allow_html=True)
@@ -2971,7 +2971,7 @@ PAGE_FN = {
     "Dashboard":              page_dashboard,
     "Customer Profitability": page_customer_profitability,
     "Action Queue":           page_action_queue,
-    "Recovery Tracker":       page_recovery,
+    "Impact Tracker":       page_recovery,
     "Operations":             _page_operations_safe,
     "Information Gaps":       _page_info_gaps_safe,
     "AI Assistant":           page_ai_assistant,
