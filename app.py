@@ -1263,33 +1263,62 @@ def page_dashboard():
     pct   = min(stats["recovered"] / RECOVERY_TARGET * 100, 100) if RECOVERY_TARGET else 0
     all_tickets = db.get_tickets(WAREHOUSE_ID)
 
-    # ── HOW THIS WORKS — always visible on first load ─────────
+    # ── MOS NARRATIVE — Management Operating System command centre ─────
+    _mos_open_tickets = len([t for t in all_tickets if t["status"] != "Done"])
+    _mos_blocked      = stats.get("blocked_count", 0)
+    _mos_done         = stats.get("done_count", 0)
+    _mos_data_ok      = "LIVE" if DATASET_PATH and os.path.exists(DATASET_PATH) else "DEMO"
+    _mos_today        = __import__("datetime").date.today().strftime("%d %b %Y")
+    _mos_pct          = min(stats["recovered"] / RECOVERY_TARGET * 100, 100) if RECOVERY_TARGET else 0
     st.markdown(f"""
     <div style='background:#0D2B1A;border:1px solid #1F4A2E;border-radius:6px;
-                padding:16px 20px;margin-bottom:20px'>
-      <div style='font-size:10px;font-weight:700;letter-spacing:2px;color:#5DBF8A;margin-bottom:12px'>
-        HOW PROFIT LENS WORKS
+                padding:16px 20px;margin-bottom:16px'>
+      <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:12px'>
+        <div style='font-size:10px;font-weight:700;letter-spacing:2px;color:#5DBF8A'>
+          PROFIT LENS &nbsp;&middot;&nbsp; MANAGEMENT OPERATING SYSTEM
+        </div>
+        <div style='display:flex;gap:12px;align-items:center'>
+          <span style='font-size:9px;color:#3A7A54;background:#1F4A2E;padding:3px 10px;border-radius:2px;font-weight:600'>
+            DATA: {_mos_data_ok}
+          </span>
+          <span style='font-size:9px;color:#3A7A54'>{_mos_today}</span>
+        </div>
       </div>
-      <div style='display:flex;gap:0;align-items:stretch'>
+      <div style='display:flex;gap:0;align-items:stretch;margin-bottom:12px'>
         <div style='flex:1;padding:10px 14px;border-right:1px solid #1F4A2E'>
-          <div style='font-size:18px;margin-bottom:6px'>🔍</div>
-          <div style='font-size:11px;font-weight:700;color:#FFFFFF;margin-bottom:4px'>1. FIND</div>
-          <div style='font-size:11px;color:#8FBF9F;line-height:1.5'>ABC engine analyses your warehouse data and identifies where money is leaking — below-cost pricing, unbilled work, exceptions.</div>
+          <div style='font-size:10px;font-weight:700;color:#5DBF8A;letter-spacing:1px;margin-bottom:6px'>1. FIND</div>
+          <div style='font-size:11px;color:#8FBF9F;line-height:1.5'>ABC engine identifies where money is leaking — below-cost pricing, unbilled work, exceptions. 12 findings, $2.65M mapped.</div>
         </div>
         <div style='flex:1;padding:10px 14px;border-right:1px solid #1F4A2E'>
-          <div style='font-size:18px;margin-bottom:6px'>🎫</div>
-          <div style='font-size:11px;font-weight:700;color:#FFFFFF;margin-bottom:4px'>2. TICKET</div>
-          <div style='font-size:11px;color:#8FBF9F;line-height:1.5'>Each finding becomes a ticket, routed to the right person — CEO approves pricing, Commercial Lead negotiates, Site Manager fixes data.</div>
+          <div style='font-size:10px;font-weight:700;color:#5DBF8A;letter-spacing:1px;margin-bottom:6px'>2. TICKET</div>
+          <div style='font-size:11px;color:#8FBF9F;line-height:1.5'>Each finding becomes a ticket routed to the right role. CEO approves pricing. Commercial Lead negotiates. Site Manager fixes data.</div>
         </div>
         <div style='flex:1;padding:10px 14px;border-right:1px solid #1F4A2E'>
-          <div style='font-size:18px;margin-bottom:6px'>⚡</div>
-          <div style='font-size:11px;font-weight:700;color:#FFFFFF;margin-bottom:4px'>3. ACT</div>
-          <div style='font-size:11px;color:#8FBF9F;line-height:1.5'>Each role works their queue. Close a ticket when the action is complete — a repricing approved, a rebill sent, a data error fixed.</div>
+          <div style='font-size:10px;font-weight:700;color:#5DBF8A;letter-spacing:1px;margin-bottom:6px'>3. ACT</div>
+          <div style='font-size:11px;color:#8FBF9F;line-height:1.5'>Each role works their queue on the rhythm below — daily, weekly, monthly. Close a ticket = confirmed action taken.</div>
         </div>
         <div style='flex:1;padding:10px 14px'>
-          <div style='font-size:18px;margin-bottom:6px'>💰</div>
-          <div style='font-size:11px;font-weight:700;color:#FFFFFF;margin-bottom:4px'>4. RECOVER</div>
-          <div style='font-size:11px;color:#8FBF9F;line-height:1.5'>Closing tickets moves the recovery bar. Target: <strong style='color:#5DBF8A'>$1.15M in 9 months</strong> from $2.65M total opportunity ($1.86M pricing + $0.80M operational) across 30 customers.</div>
+          <div style='font-size:10px;font-weight:700;color:#5DBF8A;letter-spacing:1px;margin-bottom:6px'>4. RECOVER</div>
+          <div style='font-size:11px;color:#8FBF9F;line-height:1.5'>Closing tickets moves the recovery bar. <strong style='color:#5DBF8A'>Target: $1.15M in 9 months.</strong> Impact Tracker shows realised value month by month.</div>
+        </div>
+      </div>
+      <div style='border-top:1px solid #1F4A2E;padding-top:10px;display:flex;gap:16px'>
+        <div style='display:flex;gap:6px;align-items:center'>
+          <div style='width:8px;height:8px;border-radius:50%;background:#DC2626'></div>
+          <div style='font-size:10px;color:#8FBF9F'><strong style='color:#FFFFFF'>{_mos_open_tickets}</strong> open tickets</div>
+        </div>
+        <div style='display:flex;gap:6px;align-items:center'>
+          <div style='width:8px;height:8px;border-radius:50%;background:#B45309'></div>
+          <div style='font-size:10px;color:#8FBF9F'><strong style='color:#FFFFFF'>{_mos_blocked}</strong> blocked</div>
+        </div>
+        <div style='display:flex;gap:6px;align-items:center'>
+          <div style='width:8px;height:8px;border-radius:50%;background:#005A32'></div>
+          <div style='font-size:10px;color:#8FBF9F'><strong style='color:#FFFFFF'>{_mos_done}</strong> closed</div>
+        </div>
+        <div style='flex:1'></div>
+        <div style='font-size:10px;color:#8FBF9F'>
+          Recovery: <strong style='color:#5DBF8A'>{_mos_pct:.1f}%</strong> of $1.15M target &nbsp;&middot;&nbsp;
+          Opportunity remaining: <strong style='color:#FFFFFF'>${(RECOVERY_TARGET*(1-_mos_pct/100))/1000:.0f}K</strong>
         </div>
       </div>
     </div>
@@ -1666,29 +1695,67 @@ def page_dashboard():
 
         _notifications_panel(role)
 
-        # MOS CADENCE — Commercial Lead (Weekly)
-        st.markdown("""
-        <div style='background:#1A3D2B;border-radius:4px;padding:16px 20px;margin-bottom:20px'>
-          <div style='font-size:9px;letter-spacing:2px;color:#6B9E83;font-weight:700;margin-bottom:10px'>
-            MANAGEMENT OPERATING SYSTEM &nbsp;&nbsp;|&nbsp;&nbsp; COMMERCIAL LEAD &nbsp;&middot;&nbsp; WEEKLY CADENCE
+        # MOS CADENCE — Commercial Lead (Weekly) — LIVE DATE-AWARE
+        import datetime as _dt
+        _cl_today = _dt.date.today()
+        _cl_week  = _cl_today.isocalendar()[1]
+        _cl_dow   = _cl_today.strftime("%A")
+        _cl_date  = _cl_today.strftime("%d %b %Y")
+        st.markdown(f"""
+        <div style='background:#1A3D2B;border-radius:4px;padding:16px 20px;margin-bottom:16px'>
+          <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:10px'>
+            <div style='font-size:9px;letter-spacing:2px;color:#6B9E83;font-weight:700'>
+              MANAGEMENT OPERATING SYSTEM &nbsp;|&nbsp; COMMERCIAL LEAD &nbsp;&middot;&nbsp; WEEKLY CADENCE
+            </div>
+            <div style='font-size:10px;color:#3A7A54;font-weight:600'>
+              Week {_cl_week} &nbsp;|&nbsp; {_cl_dow}, {_cl_date}
+            </div>
           </div>
           <div style='display:flex;gap:0;border-radius:3px;overflow:hidden'>
             <div style='flex:1;padding:10px 14px;background:rgba(255,255,255,0.04);border-right:1px solid rgba(255,255,255,0.08)'>
-              <div style='font-size:9px;color:#6B9E83;font-weight:700;letter-spacing:1px;margin-bottom:5px'>DAILY CHECK</div>
-              <div style='font-size:11px;color:#C8DDD2;line-height:1.6'>
-                Review ticket status changes<br>Flag any blocked negotiations<br>Confirm data from Site Manager received
+              <div style='font-size:9px;color:#6B9E83;font-weight:700;letter-spacing:1px;margin-bottom:8px'>DAILY CHECK</div>
+              <div style='font-size:11px;color:#C8DDD2;line-height:1.8'>
+                Review ticket status changes<br>
+                Flag any blocked negotiations<br>
+                Confirm clean data from Site Manager
               </div>
             </div>
             <div style='flex:1;padding:10px 14px;background:rgba(255,255,255,0.07);border-right:1px solid rgba(255,255,255,0.08)'>
-              <div style='font-size:9px;color:#F8B840;font-weight:700;letter-spacing:1px;margin-bottom:5px'>WEEKLY PRIORITY</div>
-              <div style='font-size:11px;color:#C8DDD2;line-height:1.6'>
-                Update pipeline status (Bravo, Delta, Charlie)<br>Prepare evidence packages<br>Escalate blockers to CEO
+              <div style='font-size:9px;color:#F8B840;font-weight:700;letter-spacing:1px;margin-bottom:8px'>THIS WEEK — ACTION QUEUE</div>
+              <div style='font-size:11px;color:#C8DDD2;line-height:1.8'>
+                Update Bravo + Delta + Charlie pipeline<br>
+                Prepare evidence packages for CEO brief<br>
+                Escalate any blockers above
+              </div>
+            </div>
+            <div style='flex:1;padding:10px 14px;background:rgba(255,255,255,0.04);border-right:1px solid rgba(255,255,255,0.08)'>
+              <div style='font-size:9px;color:#5DBF8A;font-weight:700;letter-spacing:1px;margin-bottom:8px'>MONTHLY MILESTONES</div>
+              <div style='font-size:11px;color:#C8DDD2;line-height:1.8'>
+                Month 1 &rarr; Bravo contract closed $144K<br>
+                Month 2 &rarr; Delta evidence brief to CEO<br>
+                Month 3 &rarr; Charlie rebilling in market
               </div>
             </div>
             <div style='flex:1;padding:10px 14px;background:rgba(255,255,255,0.04)'>
-              <div style='font-size:9px;color:#5DBF8A;font-weight:700;letter-spacing:1px;margin-bottom:5px'>MONTHLY MILESTONE</div>
-              <div style='font-size:11px;color:#C8DDD2;line-height:1.6'>
-                Close Bravo contract Month 1<br>Submit Delta brief to CEO Month 2<br>Charlie rebilling in market Month 3
+              <div style='font-size:9px;color:#F8B840;font-weight:700;letter-spacing:1px;margin-bottom:8px'>PIPELINE VALUE AT RISK</div>
+              <div style='display:flex;flex-direction:column;gap:4px'>
+                <div style='display:flex;justify-content:space-between'>
+                  <span style='font-size:11px;color:#C8DDD2'>Bravo</span>
+                  <span style='font-size:11px;font-weight:700;color:#5DBF8A'>$144K</span>
+                </div>
+                <div style='display:flex;justify-content:space-between'>
+                  <span style='font-size:11px;color:#C8DDD2'>Delta</span>
+                  <span style='font-size:11px;font-weight:700;color:#F8B840'>$345K</span>
+                </div>
+                <div style='display:flex;justify-content:space-between'>
+                  <span style='font-size:11px;color:#C8DDD2'>Charlie</span>
+                  <span style='font-size:11px;font-weight:700;color:#F8B840'>$229K</span>
+                </div>
+                <div style='border-top:1px solid rgba(255,255,255,0.1);margin-top:4px;padding-top:4px;
+                            display:flex;justify-content:space-between'>
+                  <span style='font-size:11px;color:#C8DDD2;font-weight:600'>Total open</span>
+                  <span style='font-size:13px;font-weight:700;color:#FFFFFF'>$718K</span>
+                </div>
               </div>
             </div>
           </div>
@@ -1786,34 +1853,104 @@ def page_dashboard():
 
         _notifications_panel(role)
 
-        # MOS CADENCE — Site Manager (Daily)
-        st.markdown("""
-        <div style='background:#1A3D2B;border-radius:4px;padding:16px 20px;margin-bottom:20px'>
-          <div style='font-size:9px;letter-spacing:2px;color:#6B9E83;font-weight:700;margin-bottom:10px'>
-            MANAGEMENT OPERATING SYSTEM &nbsp;&nbsp;|&nbsp;&nbsp; SITE MANAGER &nbsp;&middot;&nbsp; DAILY CADENCE
+        # DATA QUALITY ALERT — links Site Manager to the Information Gaps page
+        _hygiene_open = len([t for t in open_mine if t.get("finding_type") == "data_hygiene"])
+        _gap_color    = "#991B1B" if _hygiene_open > 0 else "#005A32"
+        _gap_bg       = "#1A0D0D" if _hygiene_open > 0 else "#0D1A0D"
+        _gap_border   = "#6B1A1A" if _hygiene_open > 0 else "#1A3A28"
+        _gap_icon     = "DATA QUALITY ALERT" if _hygiene_open > 0 else "DATA QUALITY OK"
+        _gap_msg      = (f"{_hygiene_open} hygiene ticket(s) open — clean data is required before Commercial Lead can start negotiations."
+                         if _hygiene_open > 0
+                         else "No open hygiene tickets. Data is clean and ready for negotiation support.")
+        st.markdown(f"""
+        <div style='background:{_gap_bg};border:1px solid {_gap_border};border-radius:4px;
+                    padding:10px 16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center'>
+          <div style='display:flex;gap:12px;align-items:center'>
+            <div style='font-size:9px;letter-spacing:1px;color:{_gap_color};font-weight:700;flex-shrink:0'>
+              {_gap_icon}
+            </div>
+            <div style='font-size:12px;color:#C8DDD2;line-height:1.5'>{_gap_msg}</div>
           </div>
-          <div style='display:flex;gap:0;border-radius:3px;overflow:hidden'>
-            <div style='flex:1;padding:10px 14px;background:rgba(255,255,255,0.07);border-right:1px solid rgba(255,255,255,0.08)'>
-              <div style='font-size:9px;color:#F8B840;font-weight:700;letter-spacing:1px;margin-bottom:5px'>TODAY — MUST DO</div>
-              <div style='font-size:11px;color:#C8DDD2;line-height:1.6'>
-                Check Delta exception rate (target: below 10%)<br>Validate pick count accuracy for billing<br>Action any open hygiene tickets (F006, F007)
-              </div>
+          <div style='font-size:10px;color:#4A9E6A;flex-shrink:0;margin-left:12px;font-weight:600'>
+            See Information Gaps page &rarr;
+          </div>
+        </div>
+        """, unsafe_allow_html=True)
+
+        # MOS CADENCE — Site Manager (Daily) — LIVE INTERACTIVE CHECKLIST
+        import datetime as _dt
+        _sm_today = _dt.date.today()
+        _sm_dow   = _sm_today.strftime("%A")
+        _sm_date  = _sm_today.strftime("%d %b %Y")
+        _sm_week  = _sm_today.isocalendar()[1]
+        _sm_is_monday = _sm_today.weekday() == 0  # Monday = send weekly report
+
+        st.markdown(f"""
+        <div style='background:#1A3D2B;border-radius:4px;padding:16px 20px;margin-bottom:8px'>
+          <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:12px'>
+            <div style='font-size:9px;letter-spacing:2px;color:#6B9E83;font-weight:700'>
+              MANAGEMENT OPERATING SYSTEM &nbsp;|&nbsp; SITE MANAGER &nbsp;&middot;&nbsp; DAILY BRIEF
             </div>
-            <div style='flex:1;padding:10px 14px;background:rgba(255,255,255,0.04);border-right:1px solid rgba(255,255,255,0.08)'>
-              <div style='font-size:9px;color:#6B9E83;font-weight:700;letter-spacing:1px;margin-bottom:5px'>WEEKLY REPORT</div>
-              <div style='font-size:11px;color:#C8DDD2;line-height:1.6'>
-                Submit corrected pick data to Commercial Lead<br>Exception root cause update<br>Labour data completeness check
-              </div>
-            </div>
-            <div style='flex:1;padding:10px 14px;background:rgba(255,255,255,0.04)'>
-              <div style='font-size:9px;color:#5DBF8A;font-weight:700;letter-spacing:1px;margin-bottom:5px'>MONTHLY TARGET</div>
-              <div style='font-size:11px;color:#C8DDD2;line-height:1.6'>
-                Close all F006/F007 hygiene items<br>Delta exception rate below network avg (5.8%)<br>Clean data ready before CEO approval of Bravo pilot
-              </div>
+            <div style='font-size:10px;color:#3A7A54;font-weight:600'>
+              {_sm_dow}, {_sm_date} &nbsp;|&nbsp; Week {_sm_week}
             </div>
           </div>
         </div>
         """, unsafe_allow_html=True)
+
+        # Live checklist columns
+        _ck1, _ck2, _ck3 = st.columns(3)
+        with _ck1:
+            st.markdown(f"""<div style='background:#0F2419;border:1px solid #1A3A28;border-radius:4px;
+                padding:10px 14px;margin-bottom:4px'>
+              <div style='font-size:9px;color:#F8B840;font-weight:700;letter-spacing:1px;margin-bottom:8px'>
+                TODAY — MUST DO &nbsp;({_sm_dow.upper()})
+              </div>
+            </div>""", unsafe_allow_html=True)
+            st.checkbox("Check Delta exception rate (target: below 10%)",   key="sm_d1")
+            st.checkbox("Validate pick count accuracy for billing",          key="sm_d2")
+            st.checkbox("Action open hygiene tickets (F006, F007)",          key="sm_d3")
+            st.checkbox("Log any new exception events on the floor",         key="sm_d4")
+
+        with _ck2:
+            _sm_is_due = _sm_today.weekday() in (0, 4)  # Mon or Fri
+            _week_label = "THIS WEEK — REPORT DUE FRIDAY" if not _sm_is_due else f"WEEKLY REPORT — DUE {'TODAY' if _sm_today.weekday()==4 else 'MONDAY'}"
+            st.markdown(f"""<div style='background:#0F2419;border:1px solid #1A3A28;border-radius:4px;
+                padding:10px 14px;margin-bottom:4px'>
+              <div style='font-size:9px;color:#6B9E83;font-weight:700;letter-spacing:1px;margin-bottom:8px'>
+                {_week_label}
+              </div>
+            </div>""", unsafe_allow_html=True)
+            st.checkbox("Submit corrected pick data to Commercial Lead",     key="sm_w1")
+            st.checkbox("Exception root cause update (Delta)",               key="sm_w2")
+            st.checkbox("Labour data completeness check (no missing days)",  key="sm_w3")
+            st.checkbox("Urgent order SLA review with floor team",           key="sm_w4")
+
+        with _ck3:
+            _done_count = sum(1 for k in ["sm_d1","sm_d2","sm_d3","sm_d4","sm_w1","sm_w2","sm_w3","sm_w4"]
+                              if st.session_state.get(k, False))
+            _total_items = 8
+            _pct_done = int(_done_count / _total_items * 100)
+            st.markdown(f"""<div style='background:#0F2419;border:1px solid #1A3A28;border-radius:4px;
+                padding:10px 14px;margin-bottom:4px'>
+              <div style='font-size:9px;color:#5DBF8A;font-weight:700;letter-spacing:1px;margin-bottom:8px'>
+                MONTHLY TARGET
+              </div>
+            </div>""", unsafe_allow_html=True)
+            st.markdown(f"""
+            <div style='background:#F5FFF8;border:1px solid #B7DCC8;border-radius:4px;padding:10px 14px;margin-bottom:8px'>
+              <div style='font-size:11px;color:#005A32;font-weight:600;margin-bottom:6px'>Today: {_done_count}/{_total_items} items complete</div>
+              <div style='background:#D1FAE5;border-radius:2px;height:6px;margin-bottom:8px'>
+                <div style='background:#005A32;height:6px;border-radius:2px;width:{_pct_done}%'></div>
+              </div>
+              <div style='font-size:11px;color:#374151;line-height:1.6'>
+                Close F006/F007 hygiene items<br>
+                Delta exception rate below 5.8% network avg<br>
+                Clean data before CEO Bravo approval
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
+        st.markdown("<div style='margin-bottom:12px'></div>", unsafe_allow_html=True)
 
         # Plain-English context for Site Manager
         st.markdown(f"""
