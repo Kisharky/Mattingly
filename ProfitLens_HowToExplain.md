@@ -92,7 +92,7 @@ You can't go into a repricing negotiation without knowing WHY the customer is un
 
 | Customer | True Margin | The Problem | The Ask |
 |---|---|---|---|
-| Bravo FMCG | 28.1% | 2M picks/yr at $0.12 — every pick loses $0.145 | Reprice to $0.19 |
+| Bravo FMCG | 29.1% | 2M picks/yr at $0.12 — every pick loses $0.145 | Reprice to $0.19 |
 | Delta Manufacturing | 19.5% | Below-cost rate + $147K unbilled exceptions | Reprice + rebill |
 | Charlie Medical | 38.9% | 320K picks performed, never invoiced | Rebill — use their own logs |
 | Pacific Healthcare | 65.2% | Minor rate gap, low exceptions | Monitor — Wave 2 |

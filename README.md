@@ -20,7 +20,7 @@ The ABC (Activity-Based Costing) engine calculates:
 | True pick cost | **$0.265/pick** | Conservative floor (4 days missing T&A data treated as zero cost) |
 | True pick cost (strict) | **$0.284/pick** | Removes the 4 incomplete days from calculation |
 | Charged rate range | **$0.12–$0.17/pick** | Every customer is being served below true cost |
-| Total identified opportunity | **$2.66M/year** | $1.86M pricing leakage + $0.80M operational exposure |
+| Total identified opportunity | **$2.66M/year** | $1.86M engine-derived pricing leakage + $0.80M qualitative ops exposure (F014/F015) |
 | 9-month recovery target | **$1.15M** | Achievable through repricing and re-billing — no customer exits |
 
 **Operational exposure breakdown:**
@@ -41,7 +41,7 @@ UPLOAD → ANALYSE → TICKET → ACT → RECOVER
 |---|---|
 | **UPLOAD** | Drop the warehouse Excel file. The engine resolves sheet names dynamically — handles renamed or reordered tabs, concatenates monthly variants (M1/M2/M3...), and derives the annualisation factor from the months actually present. |
 | **ANALYSE** | ABC engine calculates true pick cost, compares to each customer's contracted rate, identifies exception volumes, and flags data gaps — all from the raw dataset. |
-| **TICKET** | Every gap becomes a finding ticket with a dollar value, priority, assigned role, and status. 10 pre-built findings load from `data/findings.json` on first run. Live upload regenerates from the actual dataset. |
+| **TICKET** | Every gap becomes a finding ticket with a dollar value, priority, assigned role, and status. 10 pre-built findings load from `data/findings.json` on first run. Live upload regenerates the engine KPIs from the actual dataset; ticket templating from uploaded files is v2 (the Action Queue continues to show the findings.json tickets after upload). |
 | **ACT** | Role-filtered queues: CEO approves and tracks, Commercial Lead reprices and rebills, Site Manager closes data gaps. AI suggests the single highest-impact action for each role based on live ticket state. |
 | **RECOVER** | Closing a ticket moves the live recovery bar. The Impact Tracker shows which actions have converted to measurable profit improvement — closing the loop from finding to value. |
 
@@ -118,7 +118,7 @@ Role-filtered view — the entire page changes based on the sidebar Role selecto
 |---|---|---|---|
 | Bravo FMCG | 29% | $0.12/pick vs $0.265 true cost | Reprice to $0.19 — Month 1 pilot |
 | Delta Manufacturing | 19.5% | Below-cost rate + 14% exception rate | Reprice + rebill exceptions — Month 2 |
-| Charlie Retail | 22% | $68K unbilled pick exceptions | Issue credit note and rebill — immediate |
+| Charlie Medical | 22% | $127K unbilled pick exceptions | Issue credit note and rebill — immediate |
 
 **Methodology caveat:** Margins are a pricing-and-billing view, not a measured-per-customer P&L. Missing input: Product ID join key on transaction records (top data quality priority).
 
@@ -137,13 +137,13 @@ Data quality scorecard — confidence ratings for each finding, what's blocking 
 **CEO Monthly Data Quality Priorities:**
 1. 🔴 OPEN — Product ID join key on transaction records (IT / Data Engineering)
 2. 🟡 OPEN — F007 4-day labour gap in timesheet data (Site Manager)
-3. 🟢 VERIFIED — Seasonality factor confirmed from 6 months of data
+3. 🟡 OPEN — Seasonality stable on available data (M1/M2 volume ratio 0.84–1.18 across all 30 customers); 12-month WMS history validation pending before repricing
 
 ### 7. AI Assistant (Management Q&A)
 Full conversational chatbot on Groq LLaMA 3.3 70B. System prompt built from live `_HF` headline figures — cites actual engine output, never hardcoded numbers. Role-specific context loads on entry.
 
 ### 8. Load Data (Live Upload)
-Upload the warehouse Excel file to regenerate all findings from the actual dataset. Sheet resolver handles renamed or reordered tabs. Upload guard alerts if pre-baked tickets are still loaded after a fresh upload.
+Upload the warehouse Excel file to regenerate the engine KPIs from the actual dataset. Sheet resolver handles renamed or reordered tabs. Ticket templating from uploaded files is planned for v2 — the Action Queue continues to show the findings.json tickets after upload, and an upload guard alerts if pre-baked tickets are still loaded after a fresh upload.
 
 ### 9. Tickets (Admin)
 Database view — all tickets, raw status, dollar impact. Reset to default or reload from findings.json.
@@ -188,7 +188,7 @@ Phase 3 Tool/
 |---|---|---|
 | 1 | Bravo FMCG repricing pilot ($144K/yr) | $144K |
 | 2 | Delta Manufacturing evidence + exception rebilling | $272K |
-| 3 | Delta repricing + Charlie Retail rebill ($68K) | $416K |
+| 3 | Delta repricing + Charlie Medical rebill ($127K) | $416K |
 | 6 | Sites 2–3 onboarding | $850K |
 | 9 | Full portfolio — all 30 customers on corrected rates | $1.15M |
 
@@ -207,8 +207,4 @@ Most hackathon submissions find the problem. Profit Lens closes the loop:
 1. **Finding → specific dollar amount**, not a directional observation
 2. **Ticket → owned by a named role** with a status and a deadline
 3. **AI action → Nemotron reasons over live ticket state**, not a generic recommendation
-4. **Recovery tracking → the bar moves when tickets close**, proving ROI in the session
-5. **Resilient ingest → drop any renamed Excel file**, it works
-6. **Graceful AI degradation → no keys, no internet**, app still runs with full pre-computed insight
-
-The architecture separates what AI is good at (reasoning over structure) from what it must never do (generate financial numbers). That boundary is enforced in code, not policy.
+4. **Recovery tracking �
