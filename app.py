@@ -3041,6 +3041,11 @@ def page_load_data():
                     quality_df = result.get("quality")
                     prof_df = result.get("profitability")
                     prod_df = result.get("productivity")
+                    _months_detected   = result.get("months_in_data", 2)
+                    _ann_factor        = result.get("annualise_factor", 6)
+                    # Store in session state so other pages know fresh data is live
+                    st.session_state["upload_result"]  = result
+                    st.session_state["upload_filename"] = uploaded_file.name
 
                     import os as _os
                     _os.unlink(tmp_path)
@@ -3064,7 +3069,7 @@ def page_load_data():
                     h1.markdown(kpi_card("Pick Cost (Labour)", f"${pick_cost:.4f}/pick",
                                          "Engine-computed true cost", C_RED), unsafe_allow_html=True)
                     h2.markdown(kpi_card("Unbilled Leakage", fmt_dollars(total_lkg),
-                                         "Annual (annualised ×6)", C_RED), unsafe_allow_html=True)
+                                         f"Annual (annualised ×{_ann_factor:.0f})", C_RED), unsafe_allow_html=True)
                     h3.markdown(kpi_card("Below-Cost Pricing", fmt_dollars(total_below),
                                          "All customers annualised", C_AMBER), unsafe_allow_html=True)
                     h4.markdown(kpi_card("Total Opportunity", fmt_dollars(total_opp),
@@ -3086,6 +3091,46 @@ def page_load_data():
                     if quality_df is not None and len(quality_df) > 0:
                         with st.expander(f"Data Quality Log ({len(quality_df)} items)"):
                             st.dataframe(quality_df, use_container_width=True, hide_index=True)
+
+                    # ── UPLOAD GUARD ─────────────────────────────────────────
+                    # The live engine output above is NOT wired into the ticket
+                    # database — the Action Queue still holds findings.json data.
+                    # Guard: clear stale tickets so old pre-baked data cannot
+                    # silently co-exist with the new engine numbers.
+                    try:
+                        _conn = db.get_conn()
+                        _stale = _conn.execute(
+                            "SELECT COUNT(*) FROM tickets WHERE warehouse_id=?",
+                            (WAREHOUSE_ID,)).fetchone()[0]
+                        if _stale:
+                            _conn.execute(
+                                "DELETE FROM tickets WHERE warehouse_id=?",
+                                (WAREHOUSE_ID,))
+                            _conn.execute(
+                                "DELETE FROM data_loaded WHERE warehouse_id=?",
+                                (WAREHOUSE_ID,))
+                            _conn.commit()
+                        _conn.close()
+                    except Exception:
+                        pass  # DB clear is best-effort; don't crash the upload view
+
+                    st.markdown(f"""
+                    <div style='background:#2A2010;border:1px solid #8B6914;border-radius:6px;
+                                padding:14px 18px;margin:16px 0'>
+                      <div style='font-size:10px;letter-spacing:2px;color:#E8A820;font-weight:700;
+                                  margin-bottom:6px'>⚠ ACTION QUEUE REFRESH REQUIRED</div>
+                      <div style='font-size:12px;color:#C8A060;line-height:1.6'>
+                        Live engine numbers ({_months_detected} month(s) detected, ×{_ann_factor:.0f} annualised)
+                        are shown above. The <strong>Action Queue</strong> and <strong>Impact Tracker</strong>
+                        were cleared and will be empty until you click
+                        <strong>Reload Findings</strong> below — this re-seeds the ticket queue
+                        from the pre-built dataset, not the uploaded file.
+                        <br><br>
+                        <em>To fully regenerate tickets from the uploaded file, an export step
+                        from the engine to findings.json format is required (planned for v2).</em>
+                      </div>
+                    </div>
+                    """, unsafe_allow_html=True)
 
                 except Exception as e:
                     st.error(f"Engine error: {e}")
