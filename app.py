@@ -1466,6 +1466,52 @@ def page_dashboard():
               </div>
             </div>
             """, unsafe_allow_html=True)
+
+            # DATA-QUALITY SCORECARD — monthly CEO review item
+            st.markdown("""
+            <div style='background:#1A1020;border:1px solid #3D2060;border-left:4px solid #7A40CC;
+                        border-radius:4px;padding:14px 18px;margin-top:10px'>
+              <div style='font-size:9px;letter-spacing:2px;color:#9B60DD;font-weight:700;margin-bottom:8px'>
+                DATA-QUALITY SCORECARD &nbsp;·&nbsp; MONTHLY CEO REVIEW</div>
+              <div style='display:grid;grid-template-columns:auto 1fr auto;gap:6px 14px;align-items:start'>
+
+                <div style='font-size:11px;font-weight:800;color:#CC4444;margin-top:1px'>#1</div>
+                <div>
+                  <div style='font-size:11px;font-weight:700;color:#E8D0F8'>Product ID join key on transaction records</div>
+                  <div style='font-size:10px;color:#A080C0;line-height:1.5;margin-top:2px'>
+                    Product Master holds SKU size and handling complexity but transactions carry no join key.
+                    Without it, cost-to-serve stays at blended warehouse rates — per-customer granularity
+                    and complexity-based pricing tiers cannot be validated.
+                    <strong style='color:#CC88FF'>Owner: IT / Data Engineering. Priority: HIGH.</strong>
+                  </div>
+                </div>
+                <div style='font-size:9px;font-weight:700;color:#CC4444;white-space:nowrap;margin-top:2px'>OPEN</div>
+
+                <div style='font-size:11px;font-weight:800;color:#B45309;margin-top:1px'>#2</div>
+                <div>
+                  <div style='font-size:11px;font-weight:700;color:#E8D0F8'>4-day labour data gap (F007)</div>
+                  <div style='font-size:10px;color:#A080C0;line-height:1.5;margin-top:2px'>
+                    Missing T&amp;A records for 4 days push pick cost from $0.265 (conservative floor)
+                    to $0.284 (strict). Resolve before using either figure in external negotiations.
+                    <strong style='color:#CC88FF'>Owner: Site Manager. Priority: HIGH.</strong>
+                  </div>
+                </div>
+                <div style='font-size:9px;font-weight:700;color:#B45309;white-space:nowrap;margin-top:2px'>OPEN</div>
+
+                <div style='font-size:11px;font-weight:800;color:#4A7A4A;margin-top:1px'>#3</div>
+                <div>
+                  <div style='font-size:11px;font-weight:700;color:#E8D0F8'>Seasonality verification</div>
+                  <div style='font-size:10px;color:#A080C0;line-height:1.5;margin-top:2px'>
+                    M1/M2 activity ratio 0.84–1.18 across all 30 customers. ×6 annualisation is valid.
+                    Re-verify when M3 data is available.
+                    <strong style='color:#88CC88'>Owner: Data Analyst. Priority: MONITOR.</strong>
+                  </div>
+                </div>
+                <div style='font-size:9px;font-weight:700;color:#4A7A4A;white-space:nowrap;margin-top:2px'>VERIFIED</div>
+
+              </div>
+            </div>
+            """, unsafe_allow_html=True)
         with _ceo_tab_q:
             st.markdown("""
             <div style='background:#1A3D2B;border-radius:4px;padding:14px 18px;margin-top:8px;margin-bottom:4px'>
@@ -2175,6 +2221,26 @@ def page_customer_profitability():
         "4 days of data missing — Site Manager must resolve F007. Seasonality verified stable (M1/M2 ratio 0.84–1.18 across all 30 customers). "
         "True pick cost **$0.265/pick** (conservative floor) is directionally correct; engine-strict rate is $0.284/pick (labour-only). Validate before external negotiations."
     )
+
+    # ── METHODOLOGY CAVEAT ────────────────────────────────────────────────────
+    st.markdown(f"""
+    <div style='background:#1A1A2E;border:1px solid #2D2D5E;border-left:4px solid #4A4A9A;
+                border-radius:4px;padding:14px 18px;margin-bottom:8px'>
+      <div style='font-size:9px;letter-spacing:2px;color:#8888CC;font-weight:700;margin-bottom:6px'>
+        METHODOLOGY NOTE — PRICING &amp; BILLING VIEW</div>
+      <div style='font-size:12px;color:#B8B8E8;line-height:1.65'>
+        These margins reflect a <strong>pricing-and-billing view</strong>: cost-to-serve is modelled
+        as customer activity volume × a blended warehouse unit cost, not measured at the customer level,
+        because labour records carry no customer dimension in the source data.
+        Translating this into a true per-customer cost-to-serve requires one missing input:
+        a <strong>Product ID join key on transaction records</strong> — Product Master holds
+        size and handling complexity, but transactions currently carry no join key to link them.
+        The analysis is directionally sound for pricing decisions; per-SKU cost granularity
+        becomes available once that join key is in place.
+      </div>
+    </div>
+    """, unsafe_allow_html=True)
+
     st.markdown("---")
     st.markdown(sec("Customer Portfolio — Sorted by Risk"), unsafe_allow_html=True)
 
@@ -3162,7 +3228,7 @@ def page_load_data():
                 conn.commit()
                 conn.close()
                 db.load_findings_json(DATA_PATH)
-                all_t = db.get_tickets(WAREHOUSE_ID)
+                ll_t = db.get_tickets(WAREHOUSE_ID)
                 st.success(f"Analysis complete \u2014 {len(all_t)} findings processed, {len(all_t)} tickets auto-generated and routed to role queues.")
                 st.rerun()
             except Exception as e:
@@ -3200,9 +3266,9 @@ def page_load_data():
 
 
 
-# ═══════════════════════════════════════════════════════════
+# \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 # ROUTER
-# ═══════════════════════════════════════════════════════════
+# \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 
 def _page_operations_safe():
     if _OPS_AVAILABLE:
