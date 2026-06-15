@@ -1043,7 +1043,20 @@ def _ask_groq_quick(question, role):
         return "9-month plan: Month 1 Bravo $144K → Month 3 Delta+Charlie $416K cumulative → Month 6 WH002+WH003 $850K → Month 9 full network $1.15M. Data hygiene must close before Month 2 negotiations begin."
     if "hygiene" in q_low or "data" in q_low:
         return "Two open hygiene items: F006 (validate findings vs 12-month history) and F007 (close 4-day labour data gap). Both must be resolved **before** Commercial Lead opens any customer negotiation. Estimated 1 week to resolve."
-    return f"Based on ABC costing analysis: true pick cost is $0.265/pick across all customers. Network average charge is ~$0.14/pick. Total opportunity: $2.65M/yr ($1.86M pricing + $0.80M ops). Delivery target: $1.15M pricing over 9 months. Bravo FMCG is Month 1 priority."
+    # More keyword coverage before the catch-all
+    if "margin" in q_low or "wrong" in q_low or "reported" in q_low:
+        return "Reported margin is wrong because it uses revenue minus simple headcount cost — it misses the activity split. ABC costing shows $0.265/pick is the true floor (labour only). Most customers pay $0.12–$0.17/pick. That gap is $1.86M/yr in pricing leakage, none of which shows in P&L until you run ABC."
+    if "risk" in q_low or "derail" in q_low:
+        return "Three risks to the $1.15M target: (1) Data hygiene — if F006/F007 aren't closed, Commercial Lead has no clean numbers for negotiations. (2) Customer sequencing — going to Delta before Bravo pilot is proven is a mistake. (3) Exception pool — if Delta's 14.1% exception rate isn't tackled operationally, the cost base stays high and repricing alone won't hold."
+    if "approve" in q_low or "first" in q_low or "priority" in q_low:
+        return "Bravo FMCG first — cleanest case, no disputed data, biggest rate gap ($0.12 vs $0.265 true cost), $144K annual uplift. Use it as the pilot. Once Bravo is closed, the Commercial Lead has a live example to take to Delta. Don't try to run all three simultaneously."
+    if "ruin" in q_low or "destroy" in q_low or "worst" in q_low or "fail" in q_low:
+        return "Three ways to ruin this: (1) Reprice Delta before closing the data hygiene tickets — customer disputes the numbers, you lose credibility on everything. (2) Negotiate all accounts at once — dilutes focus and signals panic. (3) Ignore the exception pool — reprice Bravo, Delta, Charlie but leave 26% of labour in unmanaged exceptions, and margin improvement stalls inside 12 months."
+    if "cost" in q_low or "pick" in q_low or "0.265" in q_low:
+        return "True pick cost is $0.265/pick (labour only, conservative floor — 4 missing days treated as zero). Strict figure is $0.284 once those days are imputed. The difference matters less than the direction: every customer in the portfolio is below cost. Most are paying $0.12–$0.17. That is the gap."
+    if "network" in q_low or "site" in q_low or "warehouse" in q_low:
+        return "WH001 (current analysis) maps $2.65M opportunity across 30 customers. WH002 and WH003 are on the roadmap — same ABC methodology, estimated $850K additional opportunity combined. Rollout in Month 6 once WH001 recovery is on track and the playbook is proven."
+    return "That question isn't in my current scope — I can answer questions about the Mattingly Logistics analysis: customer margins, pick costs, exception rates, the $2.65M opportunity, and the recovery plan. Try asking about a specific customer (Bravo, Delta, Charlie) or a specific number."
 
 def _mini_qa(role):
     """Compact AI Q&A panel — embedded in Dashboard for each role"""
