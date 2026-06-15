@@ -35,7 +35,7 @@ The ABC engine calculates:
 
 - **True pick cost: $0.265/pick** — conservative floor used for all negotiations. The engine-strict figure is $0.284/pick.
 - **Charged rate: $0.12–$0.17/pick** — every customer is being served below cost.
-- **$2.65M/year** total identified opportunity: $1.86M pricing leakage + $0.80M operational exposure (exception labour drain + urgent order throughput penalty).
+- **$2.66M/year** total identified opportunity: $1.86M pricing leakage + $0.80M operational exposure (F014: exception-handling labour drain $0.45M + F015: urgent-order throughput penalty $0.35M).
 - **$1.15M** is deliverable in 9 months through repricing and re-billing — without losing a single customer.
 
 > **Why two pick-cost numbers?** The labour dataset has 4 days with missing time-and-attendance records. The conservative $0.265 treats those days as zero additional cost, producing the lower, safer negotiating floor. The strict $0.284 removes those incomplete days from the calculation. All commercial conversations use $0.265 — it is harder to dispute and still proves every customer is below cost.

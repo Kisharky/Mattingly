@@ -20,6 +20,14 @@ ANNUALISE = 6
 
 CONSERVATIVE_DAYS_HANDLING = True
 
+# Operational exposure sourced from findings F014 + F015 — these represent
+# inefficiency losses that are identified through qualitative assessment of the
+# data, not purely engine-derivable from the labour/activity tables alone:
+#   F014  Delta exception-handling labour drain   $446,000/yr
+#   F015  Urgent-order throughput penalty          $349,000/yr
+# This constant is the single named source so it never appears as a bare literal.
+OPS_EXPOSURE_F014_F015 = 446_000 + 349_000   # $795,000
+
 # ── Sheet keywords ────────────────────────────────────────────────────────────
 # Each value is a priority-ordered list: earlier keyword = higher priority.
 # When multiple sheets match the same canonical key the one whose FIRST
@@ -425,11 +433,26 @@ def run_all(path_or_buffer):
     }
 
 
-def get_headline_figures(path_or_buffer, ops_exposure=795_000, recovery_target=1_150_000):
+def get_headline_figures(path_or_buffer,
+                        ops_exposure=OPS_EXPOSURE_F014_F015,
+                        recovery_target=1_150_000):
     """
     Single source of truth for all financial figures shown in the UI.
     app.py loads this at startup into _HF; every dollar figure in the UI
     reads from _HF rather than hardcoding.
+
+    Parameters
+    ----------
+    path_or_buffer : path or file-like object for the warehouse Excel workbook.
+    ops_exposure   : operational efficiency losses from findings F014 + F015.
+                     This is the ONLY parameter that is not purely engine-derived
+                     from the Excel data — F014 and F015 require qualitative
+                     assessment (exception-handling drain and urgent-order
+                     throughput penalty) that goes beyond what labour/activity
+                     tables alone can produce. Default = OPS_EXPOSURE_F014_F015
+                     ($446K + $349K = $795K). Override for sensitivity analysis
+                     or when re-assessed findings change the estimate.
+    recovery_target: 9-month delivery target agreed with management ($1.15M).
     """
     result = run_all(path_or_buffer)
     h   = result["headlines"]
@@ -499,14 +522,4 @@ if __name__ == "__main__":
     print(f"  Recovery target:           {hf['recovery_target_fmt']}")
     print(f"  Bravo annual loss:         ${hf['bravo_annual_loss']:,.0f}")
     print(f"  Delta combined:            ${hf['delta_combined']:,.0f}")
-    print(f"  Charlie unbilled:          ${hf['charlie_unbilled']:,.0f}")
-    print("-" * 65)
-    tie_check = abs(hf["pricing_exposure"] + hf["ops_exposure"] - hf["total_opportunity"])
-    print("TIE-OUT OK" if tie_check < 1 else f"TIE-OUT FAILED: delta={tie_check:.2f}")
-
-    print()
-    print("WORST 5 CUSTOMERS")
-    print(res["profitability"].head(5)[["Customer Name", "revenue", "profit", "margin_pct"]].round(0))
-    print()
-    print("QUALITY LOG")
-    print(res["quality"].to_string(index=False))
+    

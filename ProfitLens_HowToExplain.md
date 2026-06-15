@@ -8,7 +8,7 @@ Mattingly AI & Operations Hackathon 2026 · Kishan Gowda
 
 ## The One-Paragraph Pitch
 
-Mattingly currently shows every customer at ~96% gross margin. That number is wrong — it's calculated by allocating cost by revenue share, not by actual activity. When you run Activity-Based Costing on the real data, every single customer is being served below the true cost of a pick. The business is profitable on paper and bleeding in reality. Profit Lens surfaces that $2.65M opportunity ($1.86M pricing leakage + $0.80M operational), turns each finding into a ticket owned by the right person, and tracks recovery against a $1.15M target — with a live bar that proves the closed loop is working. It's not a dashboard you check once. It's a monthly management operating system.
+Mattingly currently shows every customer at ~96% gross margin. That number is wrong — it's calculated by allocating cost by revenue share, not by actual activity. When you run Activity-Based Costing on the real data, every single customer is being served below the true cost of a pick. The business is profitable on paper and bleeding in reality. Profit Lens surfaces that $2.66M opportunity ($1.86M pricing leakage + $0.80M operational), turns each finding into a ticket owned by the right person, and tracks recovery against a $1.15M target — with a live bar that proves the closed loop is working. It's not a dashboard you check once. It's a monthly management operating system.
 
 ---
 
@@ -62,7 +62,7 @@ The Recovery Tracker page shows recovered dollars vs $1.15M target — in real t
 - Floating "Ask Profit Lens" chat button (bottom-right)
 
 **What it solves:**
-The CEO currently has no single view of where profit is leaking and what's being done about it. This page gives them: the size of the opportunity ($2.65M), the recovery target ($1.15M), what's open, and a color-coded health view of the whole customer portfolio — in 30 seconds.
+The CEO currently has no single view of where profit is leaking and what's being done about it. This page gives them: the size of the opportunity ($2.66M), the recovery target ($1.15M), what's open, and a color-coded health view of the whole customer portfolio — in 30 seconds.
 
 **The key moment:** Switch from CEO → Commercial Lead → Site Manager in the sidebar. The queue changes instantly. Each role sees only their work. No noise, no overwhelm, clear ownership.
 
@@ -181,7 +181,7 @@ In production, the analysis engine runs at month-end, outputs a new findings JSO
 ## How to Demo It in 7 Minutes
 
 **Minute 1 — The Problem:**
-Open Dashboard as CEO. "This is what Mattingly sees today: $2.65M of opportunity, 12 open findings, and a portfolio where most customers are flagged Action Required or Watch. None of this was visible before."
+Open Dashboard as CEO. "This is what Mattingly sees today: $2.66M of opportunity, 12 open findings, and a portfolio where most customers are flagged Action Required or Watch. None of this was visible before."
 
 **Minute 2 — The Gap:**
 Click Customer Intelligence. Select Delta Manufacturing. "Reported margin: 96%. True margin: 19.5%. That's a 79-point gap — invisible in their current system. And it's not one problem, it's two." Show the donut.
