@@ -439,72 +439,10 @@ hr { border-color: #E5E7EB !important; }
 .stSuccess { background: #EAF3EE !important; border-color: #005A3244 !important; }
 .stError { background: #FEE2E2 !important; border-color: #991B1B44 !important; }
 
-/* ── Floating chathead ── */
-#profit-lens-fab {
-    position: fixed;
-    bottom: 28px;
-    right: 28px;
-    z-index: 99999;
-    display: flex;
-    flex-direction: column;
-    align-items: flex-end;
-    gap: 8px;
-    pointer-events: none;
-}
-#profit-lens-fab a, #profit-lens-fab button {
-    width: 56px;
-    height: 56px;
-    border-radius: 50%;
-    background: #005A32;
-    box-shadow: 0 4px 20px rgba(0,90,50,0.45);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: transform 0.15s ease, box-shadow 0.15s ease;
-    pointer-events: all;
-    border: none;
-    padding: 0;
-}
-#profit-lens-fab a:hover, #profit-lens-fab button:hover {
-    transform: scale(1.08);
-    box-shadow: 0 6px 28px rgba(0,90,50,0.55);
-}
-#profit-lens-fab .fab-label {
-    background: #003D22;
-    color: #A8D5B5;
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    padding: 4px 12px;
-    border-radius: 12px;
-    white-space: nowrap;
-    pointer-events: none;
-    opacity: 0;
-    transform: translateY(4px);
-    transition: opacity 0.15s ease, transform 0.15s ease;
-}
-#profit-lens-fab:hover .fab-label {
-    opacity: 1;
-    transform: translateY(0);
-}
+/* ── Floating chathead removed — AI Assistant accessible via sidebar ── */
 </style>
 """, unsafe_allow_html=True)
 
-# ── FLOATING CHATHEAD ──────────────────────────────────────
-st.markdown("""
-<div id="profit-lens-fab">
-  <div class="fab-label">ASK PROFIT LENS</div>
-  <a href="/?open_chat=1" target="_top" style="all:unset;cursor:pointer;display:flex;align-items:center;justify-content:center;width:56px;height:56px;border-radius:50%;background:#005A32;box-shadow:0 4px 20px rgba(0,90,50,0.45)">
-    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <path d="M20 2H4C2.9 2 2 2.9 2 4V22L6 18H20C21.1 18 22 17.1 22 16V4C22 2.9 21.1 2 20 2Z" fill="white"/>
-      <circle cx="8" cy="11" r="1.2" fill="#005A32"/>
-      <circle cx="12" cy="11" r="1.2" fill="#005A32"/>
-      <circle cx="16" cy="11" r="1.2" fill="#005A32"/>
-    </svg>
-  </a>
-</div>
-""", unsafe_allow_html=True)
 
 # ── INIT ──────────────────────────────────────────────────
 db.init_db()
@@ -518,20 +456,6 @@ if "chat_open"    not in st.session_state: st.session_state.chat_open  = False
 if "warehouse"    not in st.session_state: st.session_state.warehouse  = "WH001 — National (Melbourne)"
 if "_ticket_ai"   not in st.session_state: st.session_state._ticket_ai  = {}
 
-# Handle chathead ?open_chat=1 navigation
-# NOTE: st.rerun() must NOT be inside a bare except Exception — it raises StopException internally
-_open_chat = False
-try:
-    _open_chat = st.query_params.get("open_chat") == "1"
-except Exception:
-    pass
-if _open_chat:
-    st.session_state.page = "AI Assistant"
-    try:
-        st.query_params.clear()
-    except Exception:
-        pass
-    st.rerun()  # outside try/except so StopException propagates correctly
 
 WAREHOUSES = {
     "WH001 — National (Melbourne)": "WH001",
