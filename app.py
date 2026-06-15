@@ -1471,45 +1471,55 @@ def page_dashboard():
             st.markdown("""
             <div style='background:#1A1020;border:1px solid #3D2060;border-left:4px solid #7A40CC;
                         border-radius:4px;padding:14px 18px;margin-top:10px'>
-              <div style='font-size:9px;letter-spacing:2px;color:#9B60DD;font-weight:700;margin-bottom:8px'>
-                DATA-QUALITY SCORECARD &nbsp;·&nbsp; MONTHLY CEO REVIEW</div>
-              <div style='display:grid;grid-template-columns:auto 1fr auto;gap:6px 14px;align-items:start'>
+              <div style='font-size:9px;letter-spacing:2px;color:#9B60DD;font-weight:700;margin-bottom:10px'>
+                DATA-QUALITY SCORECARD &#183; MONTHLY CEO REVIEW</div>
 
-                <div style='font-size:11px;font-weight:800;color:#CC4444;margin-top:1px'>#1</div>
-                <div>
-                  <div style='font-size:11px;font-weight:700;color:#E8D0F8'>Product ID join key on transaction records</div>
-                  <div style='font-size:10px;color:#A080C0;line-height:1.5;margin-top:2px'>
+              <div style='display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #3D2060'>
+                <div style='min-width:24px;font-size:12px;font-weight:800;color:#CC4444;padding-top:1px'>1</div>
+                <div style='flex:1'>
+                  <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:3px'>
+                    <span style='font-size:11px;font-weight:700;color:#E8D0F8'>Product ID join key on transaction records</span>
+                    <span style='font-size:9px;font-weight:700;color:#CC4444;background:#3D1010;padding:2px 7px;border-radius:2px;white-space:nowrap;margin-left:10px'>OPEN</span>
+                  </div>
+                  <div style='font-size:10px;color:#A080C0;line-height:1.5'>
                     Product Master holds SKU size and handling complexity but transactions carry no join key.
                     Without it, cost-to-serve stays at blended warehouse rates — per-customer granularity
                     and complexity-based pricing tiers cannot be validated.
-                    <strong style='color:#CC88FF'>Owner: IT / Data Engineering. Priority: HIGH.</strong>
+                    <strong style='color:#CC88FF'>Owner: IT / Data Engineering &nbsp;·&nbsp; Priority: HIGH</strong>
                   </div>
                 </div>
-                <div style='font-size:9px;font-weight:700;color:#CC4444;white-space:nowrap;margin-top:2px'>OPEN</div>
-
-                <div style='font-size:11px;font-weight:800;color:#B45309;margin-top:1px'>#2</div>
-                <div>
-                  <div style='font-size:11px;font-weight:700;color:#E8D0F8'>4-day labour data gap (F007)</div>
-                  <div style='font-size:10px;color:#A080C0;line-height:1.5;margin-top:2px'>
-                    Missing T&amp;A records for 4 days push pick cost from $0.265 (conservative floor)
-                    to $0.284 (strict). Resolve before using either figure in external negotiations.
-                    <strong style='color:#CC88FF'>Owner: Site Manager. Priority: HIGH.</strong>
-                  </div>
-                </div>
-                <div style='font-size:9px;font-weight:700;color:#B45309;white-space:nowrap;margin-top:2px'>OPEN</div>
-
-                <div style='font-size:11px;font-weight:800;color:#4A7A4A;margin-top:1px'>#3</div>
-                <div>
-                  <div style='font-size:11px;font-weight:700;color:#E8D0F8'>Seasonality verification</div>
-                  <div style='font-size:10px;color:#A080C0;line-height:1.5;margin-top:2px'>
-                    M1/M2 activity ratio 0.84–1.18 across all 30 customers. ×6 annualisation is valid.
-                    Re-verify when M3 data is available.
-                    <strong style='color:#88CC88'>Owner: Data Analyst. Priority: MONITOR.</strong>
-                  </div>
-                </div>
-                <div style='font-size:9px;font-weight:700;color:#4A7A4A;white-space:nowrap;margin-top:2px'>VERIFIED</div>
-
               </div>
+
+              <div style='display:flex;align-items:flex-start;gap:10px;margin-bottom:10px;padding-bottom:10px;border-bottom:1px solid #3D2060'>
+                <div style='min-width:24px;font-size:12px;font-weight:800;color:#B45309;padding-top:1px'>2</div>
+                <div style='flex:1'>
+                  <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:3px'>
+                    <span style='font-size:11px;font-weight:700;color:#E8D0F8'>4-day labour data gap (F007)</span>
+                    <span style='font-size:9px;font-weight:700;color:#B45309;background:#2A1800;padding:2px 7px;border-radius:2px;white-space:nowrap;margin-left:10px'>OPEN</span>
+                  </div>
+                  <div style='font-size:10px;color:#A080C0;line-height:1.5'>
+                    Missing time-and-attendance records for 4 days push pick cost from $0.265 (conservative floor)
+                    to $0.284 (strict). Resolve before using either figure in external negotiations.
+                    <strong style='color:#CC88FF'>Owner: Site Manager &nbsp;·&nbsp; Priority: HIGH</strong>
+                  </div>
+                </div>
+              </div>
+
+              <div style='display:flex;align-items:flex-start;gap:10px'>
+                <div style='min-width:24px;font-size:12px;font-weight:800;color:#4A9A4A;padding-top:1px'>3</div>
+                <div style='flex:1'>
+                  <div style='display:flex;justify-content:space-between;align-items:center;margin-bottom:3px'>
+                    <span style='font-size:11px;font-weight:700;color:#E8D0F8'>Seasonality verification</span>
+                    <span style='font-size:9px;font-weight:700;color:#4A9A4A;background:#0D2010;padding:2px 7px;border-radius:2px;white-space:nowrap;margin-left:10px'>VERIFIED</span>
+                  </div>
+                  <div style='font-size:10px;color:#A080C0;line-height:1.5'>
+                    M1/M2 activity ratio 0.84&#8211;1.18 across all 30 customers. x6 annualisation is valid.
+                    Re-verify when M3 data is available.
+                    <strong style='color:#88CC88'>Owner: Data Analyst &nbsp;·&nbsp; Priority: MONITOR</strong>
+                  </div>
+                </div>
+              </div>
+
             </div>
             """, unsafe_allow_html=True)
         with _ceo_tab_q:
