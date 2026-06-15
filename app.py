@@ -2842,21 +2842,29 @@ def page_recovery():
             for t in open_t:
                 cp = t["dollar_impact"] / RECOVERY_TARGET * 100
                 sc = STATUS_COLOR.get(t["status"], C_MUTED)
-                st.markdown(
-                    f"<div style='background:{C_CARD};border-radius:3px;padding:12px 14px;"
-                    f"margin-bottom:5px;border:1px solid {C_BORDER};border-left:3px solid {sc}'>"
-                    f"<div style='display:flex;justify-content:space-between'>"
-                    f"<div style='font-size:12px;font-weight:600;color:{C_TEXT};flex:1'>{t['title'][:52]}</div>"
-                    f"<div style='font-size:13px;font-weight:700;color:{C_AMBER};white-space:nowrap;"
-                    f"margin-left:8px'>{fmt_dollars(t['dollar_impact'])}</div>"
-                    f"</div>"
-                    f"<div style='background:#F0F2F0;border-radius:2px;height:3px;margin-top:8px'>"
-                    f"<div style='background:{C_AMBER};width:{min(cp,100):.0f}%;height:100%;border-radius:2px'></div>"
-                    f"</div>"
-                    f"<div style='font-size:10px;color:{C_MUTED};margin-top:3px'>{cp:.1f}% of target</div>"
-                    f"</div>",
-                    unsafe_allow_html=True
-                )
+                _tc1, _tc2 = st.columns([4, 1])
+                with _tc1:
+                    st.markdown(
+                        f"<div style='background:{C_CARD};border-radius:3px;padding:12px 14px;"
+                        f"margin-bottom:2px;border:1px solid {C_BORDER};border-left:3px solid {sc}'>"
+                        f"<div style='display:flex;justify-content:space-between'>"
+                        f"<div style='font-size:12px;font-weight:600;color:{C_TEXT};flex:1'>{t['title'][:52]}</div>"
+                        f"<div style='font-size:13px;font-weight:700;color:{C_AMBER};white-space:nowrap;"
+                        f"margin-left:8px'>{fmt_dollars(t['dollar_impact'])}</div>"
+                        f"</div>"
+                        f"<div style='background:#F0F2F0;border-radius:2px;height:3px;margin-top:8px'>"
+                        f"<div style='background:{C_AMBER};width:{min(cp,100):.0f}%;height:100%;border-radius:2px'></div>"
+                        f"</div>"
+                        f"<div style='font-size:10px;color:{C_MUTED};margin-top:3px'>{cp:.1f}% of target</div>"
+                        f"</div>",
+                        unsafe_allow_html=True
+                    )
+                with _tc2:
+                    st.markdown("<div style='margin-top:8px'></div>", unsafe_allow_html=True)
+                    if st.button("✓ Done", key=f"rec_done_{t['id']}", use_container_width=True):
+                        db.update_ticket_status(t["id"], "Done")
+                        st.rerun()
+                st.markdown("<div style='margin-bottom:4px'></div>", unsafe_allow_html=True)
 
     st.markdown("---")
     st.markdown(sec("Delivery Plan — 9 Months"), unsafe_allow_html=True)
@@ -3416,7 +3424,7 @@ PAGE_FN = {
     "Dashboard":              page_dashboard,
     "Customer Profitability": page_customer_profitability,
     "Action Queue":           page_action_queue,
-    "Impact Tracker":       page_recovery,
+    "Impact Tracker":         page_recovery,
     "Operations":             _page_operations_safe,
     "Information Gaps":       _page_info_gaps_safe,
     "AI Assistant":           page_ai_assistant,
