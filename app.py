@@ -2304,6 +2304,59 @@ def page_customer_profitability():
     """, unsafe_allow_html=True)
 
     st.markdown("---")
+    st.markdown(sec("Key Accounts — Immediate Action Required"), unsafe_allow_html=True)
+
+    # Spotlight 3 cards: Delta (Critical), Charlie (High), Bravo (High)
+    _spotlight = [
+        {
+            "name": "Delta Manufacturing",
+            "true_margin": 19.5,
+            "issue": "14.1% exception rate — 2.4× network avg. Below-cost rate + unbilled rework.",
+            "exposure": "$345K combined",
+            "action": "REPRICE + REBILL",
+            "action_note": "Rate renegotiation + exception billing — Month 2",
+            "color": C_RED,
+        },
+        {
+            "name": "Charlie Medical",
+            "true_margin": 22.0,
+            "issue": "165K picks performed vs 133K billed. Recurring daily gap, client log corroborates.",
+            "exposure": "$127K unbilled",
+            "action": "REBILL NOW",
+            "action_note": "Issue credit note and rebill — immediate",
+            "color": C_RED,
+        },
+        {
+            "name": "Bravo FMCG",
+            "true_margin": 29.1,
+            "issue": "2M picks/yr at $0.12 charged vs $0.265 true cost. Scale amplifies the loss.",
+            "exposure": "$144K/yr",
+            "action": "REPRICE",
+            "action_note": "Pilot $0.12 → $0.19 — Month 1 priority",
+            "color": C_AMBER,
+        },
+    ]
+    _sp_cols = st.columns(3)
+    for _sc, _sp in zip(_sp_cols, _spotlight):
+        _sc.markdown(f"""
+        <div style='background:{C_CARD};border:1px solid {C_BORDER};border-top:3px solid {_sp["color"]};
+                    border-radius:0 0 4px 4px;padding:16px 18px;height:100%'>
+          <div style='display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px'>
+            <div style='font-size:13px;font-weight:700;color:{C_TEXT}'>{_sp["name"]}</div>
+            <div style='background:{_sp["color"]}18;border:1px solid {_sp["color"]}44;border-radius:2px;
+                        padding:2px 8px;font-size:9px;font-weight:700;color:{_sp["color"]}'>{_sp["action"]}</div>
+          </div>
+          <div style='font-size:28px;font-weight:800;color:{_sp["color"]};margin-bottom:4px'>{_sp["true_margin"]:.0f}%</div>
+          <div style='font-size:9px;letter-spacing:1px;color:{C_MUTED};font-weight:600;margin-bottom:10px'>TRUE MARGIN</div>
+          <div style='font-size:11px;color:{C_TEXT};line-height:1.55;margin-bottom:10px'>{_sp["issue"]}</div>
+          <div style='border-top:1px solid {C_DIVIDER};padding-top:10px;display:flex;justify-content:space-between;align-items:center'>
+            <div style='font-size:13px;font-weight:700;color:{_sp["color"]}'>{_sp["exposure"]}</div>
+            <div style='font-size:10px;color:{C_MUTED}'>{_sp["action_note"]}</div>
+          </div>
+        </div>""", unsafe_allow_html=True)
+
+    st.markdown("<div style='margin-bottom:20px'></div>", unsafe_allow_html=True)
+    st.markdown("---")
     st.markdown(sec("Customer Portfolio — Sorted by Risk"), unsafe_allow_html=True)
 
     for p in sorted(profiles, key=lambda x: x["true_margin_pct"]):
@@ -2570,52 +2623,59 @@ def page_action_queue():
           </div>
         </div>""", unsafe_allow_html=True)
 
-        # Detail + update form — short plain expander label (no arrow artifact)
-        with st.expander(f"Details and update  {t['id']}", expanded=False):
-            col1, col2 = st.columns([3, 1])
-            with col1:
-                st.markdown(t["description"] or "—")
-                # AI-enhanced explanation (session cache overrides ticket DB)
-                _tai    = st.session_state._ticket_ai.get(t["id"], {})
-                _expl   = _tai.get("explanation") or t.get("ai_explanation") or ""
-                _action = _tai.get("action")      or t.get("action")          or ""
-                if _expl:
-                    st.markdown(
-                        f"<div style='background:{C_BLUE_LITE};border-left:3px solid {C_BLUE};"
-                        f"padding:12px 16px;border-radius:0 3px 3px 0;margin:10px 0'>"
-                        f"<div style='font-size:9px;letter-spacing:2px;font-weight:700;color:{C_BLUE};margin-bottom:6px'>AI ROOT CAUSE</div>"
-                        f"<div style='font-size:12px;color:{C_TEXT};line-height:1.6'>{_expl}</div></div>",
-                        unsafe_allow_html=True
-                    )
-                if _action:
-                    st.markdown(
-                        f"<div style='background:{C_GREEN_LITE};border-left:3px solid {C_GREEN};"
-                        f"padding:12px 16px;border-radius:0 3px 3px 0;margin:10px 0'>"
-                        f"<div style='font-size:9px;letter-spacing:2px;font-weight:700;color:{C_GREEN};margin-bottom:6px'>AI RECOMMENDED NEXT STEP</div>"
-                        f"<div style='font-size:12px;color:{C_TEXT};line-height:1.6'>{_action}</div></div>",
-                        unsafe_allow_html=True
-                    )
-                if not _expl and not _action:
-                    if st.button("🔍 Explain with AI", key=f"ai_explain_{t['id']}"):
-                        with st.spinner("Generating AI insight..."):
-                            _res = _ai_enhance_ticket(t)
-                            if _res:
-                                st.session_state._ticket_ai[t["id"]] = _res
-                                st.rerun()
-            with col2:
-                st.markdown(f"<div style='font-size:9px;letter-spacing:2px;font-weight:700;color:{C_MUTED};margin-bottom:8px'>UPDATE STATUS</div>", unsafe_allow_html=True)
-                for s in ["To Do","In Progress","Done","Blocked"]:
-                    if s != t["status"]:
-                        if st.button(s, key=f"aq_{t['id']}_{s}", use_container_width=True):
-                            db.update_ticket_status(t["id"], s)
-                            st.success("Updated")
+        # ── Inline action row (always visible, no expander needed for demo) ──────
+        _tai    = st.session_state._ticket_ai.get(t["id"], {})
+        _expl   = _tai.get("explanation") or t.get("ai_explanation") or ""
+        _action = _tai.get("action")      or t.get("action")          or ""
+
+        _btn_cols = st.columns([2, 1, 1, 1, 1, 2])
+        with _btn_cols[0]:
+            if not _expl and not _action:
+                if st.button("🔍 Explain with AI", key=f"ai_explain_{t['id']}", use_container_width=True):
+                    with st.spinner("Generating AI insight..."):
+                        _res = _ai_enhance_ticket(t)
+                        if _res:
+                            st.session_state._ticket_ai[t["id"]] = _res
                             st.rerun()
-                st.markdown(f"<div style='font-size:9px;letter-spacing:2px;font-weight:700;color:{C_MUTED};margin:12px 0 6px'>COMMENT</div>", unsafe_allow_html=True)
-                cm = st.text_area("", placeholder="Add a note…", key=f"cm_{t['id']}", height=70, label_visibility="collapsed")
-                if st.button("Post", key=f"post_{t['id']}"):
-                    if cm.strip():
-                        db.add_comment(t["id"], role, cm.strip())
+            else:
+                st.markdown(
+                    f"<div style='font-size:10px;color:{C_BLUE};font-weight:600;padding:6px 0'>✓ AI analysis ready</div>",
+                    unsafe_allow_html=True
+                )
+        for _si, _s in enumerate(["To Do", "In Progress", "Done", "Blocked"]):
+            with _btn_cols[_si + 1]:
+                if _s != t["status"]:
+                    if st.button(_s, key=f"aq_{t['id']}_{_s}", use_container_width=True):
+                        db.update_ticket_status(t["id"], _s)
                         st.rerun()
+
+        # AI output panels (shown inline below the card when available)
+        if _expl:
+            st.markdown(
+                f"<div style='background:{C_BLUE_LITE};border-left:3px solid {C_BLUE};"
+                f"padding:12px 16px;border-radius:0 3px 3px 0;margin:6px 0 2px'>"
+                f"<div style='font-size:9px;letter-spacing:2px;font-weight:700;color:{C_BLUE};margin-bottom:6px'>AI ROOT CAUSE</div>"
+                f"<div style='font-size:12px;color:{C_TEXT};line-height:1.6'>{_expl}</div></div>",
+                unsafe_allow_html=True
+            )
+        if _action:
+            st.markdown(
+                f"<div style='background:{C_GREEN_LITE};border-left:3px solid {C_GREEN};"
+                f"padding:12px 16px;border-radius:0 3px 3px 0;margin:2px 0 6px'>"
+                f"<div style='font-size:9px;letter-spacing:2px;font-weight:700;color:{C_GREEN};margin-bottom:6px'>AI RECOMMENDED NEXT STEP</div>"
+                f"<div style='font-size:12px;color:{C_TEXT};line-height:1.6'>{_action}</div></div>",
+                unsafe_allow_html=True
+            )
+
+        # Expander for full description + comments (secondary details)
+        with st.expander(f"Description & comments  ·  {t['id']}", expanded=False):
+            st.markdown(t["description"] or "—")
+            st.markdown(f"<div style='font-size:9px;letter-spacing:2px;font-weight:700;color:{C_MUTED};margin:12px 0 6px'>COMMENT</div>", unsafe_allow_html=True)
+            cm = st.text_area("", placeholder="Add a note…", key=f"cm_{t['id']}", height=70, label_visibility="collapsed")
+            if st.button("Post", key=f"post_{t['id']}"):
+                if cm.strip():
+                    db.add_comment(t["id"], role, cm.strip())
+                    st.rerun()
             if comments:
                 st.markdown("---")
                 for c in reversed(comments[-3:]):
@@ -3327,7 +3387,7 @@ def page_load_data():
         all_t = db.get_tickets(WAREHOUSE_ID)
         if all_t:
             df = pd.DataFrame(all_t)[["id","title","customer","priority","finding_type","dollar_impact","status"]]
-            df["dollar_impact"] = df["dollar_impact"].apply(lambda v: fmt_dollars(v) if v > 0 else "—")
+            df["dollar_impact"] = df["dollar_impact"].apply(lambda v: fmt_dollars(v) if v > 0 else "\u2014")
             df.columns = ["ID","Title","Customer","Priority","Type","Impact","Status"]
             st.dataframe(df, use_container_width=True, hide_index=True)
         else:
@@ -3336,9 +3396,9 @@ def page_load_data():
         st.error(f"Error reading tickets: {e}")
 
 
-# ═══════════════════════════════════════════════════════════
+# \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 # ROUTER
-# ═══════════════════════════════════════════════════════════
+# \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
 
 def _page_operations_safe():
     if _OPS_AVAILABLE:
