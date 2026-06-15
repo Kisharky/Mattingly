@@ -143,12 +143,23 @@ TYPE_LABEL = {
 }
 
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
-try:
-    _groq_key_secret = st.secrets.get("GROQ_API_KEY", "")
-    if _groq_key_secret:
-        GROQ_API_KEY = _groq_key_secret
-except Exception:
-    pass
+# Layer 1: Streamlit secrets (works on Cloud + local when secrets.toml is present)
+if not GROQ_API_KEY:
+    try:
+        GROQ_API_KEY = st.secrets["GROQ_API_KEY"]
+    except Exception:
+        pass
+# Layer 2: Direct file read — bulletproof local dev fallback
+if not GROQ_API_KEY:
+    try:
+        import re as _re
+        _sp = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".streamlit", "secrets.toml")
+        if os.path.exists(_sp):
+            _m = _re.search(r'GROQ_API_KEY\s*=\s*["\'](.*?)["\']', open(_sp).read())
+            if _m:
+                GROQ_API_KEY = _m.group(1)
+    except Exception:
+        pass
 GROQ_MODEL   = "llama-3.3-70b-versatile"
 
 
