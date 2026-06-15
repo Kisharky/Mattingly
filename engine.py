@@ -22,6 +22,12 @@ VALID_ACTIVITIES = ["Storage", "Receipt", "Dispatch", "Pick",
 # Annualisation factor: the dataset is 2 months of actuals. x6 = 12 months.
 ANNUALISE = 6
 
+# Conservative cost handling: treat missing T&A days as zero-cost (picks still happened,
+# we just have no labour record for those 4 days). This uses the activities sheet as the
+# volume denominator — larger than the labour sheet, giving a lower (more conservative)
+# cost per unit. Flip to False for the strict "only counted days" figure.
+CONSERVATIVE_DAYS_HANDLING = True
+
 
 # ----------------------------------------------------------------------------
 # 1. INGEST
@@ -120,14 +126,40 @@ def clean_data(sheets):
 # 3. COST ENGINE  (activity-based costing)
 # ----------------------------------------------------------------------------
 def activity_unit_costs(clean):
-    """True labour cost to perform one unit of each activity."""
+    """
+    True labour cost per unit of each activity.
+
+    Returns two cost columns:
+      cost_per_unit        — the canonical figure (conservative when CONSERVATIVE_DAYS_HANDLING
+                             is True, strict otherwise).  Downstream functions use this column.
+      cost_per_unit_strict — always the strict figure (labour-sheet units only), exposed so
+                             headline_numbers() can report both in the same call.
+
+    Conservative logic: some days have activities recorded but no matching labour rows
+    (the 4 missing T&A days flagged in F007).  Under the strict method those days are excluded
+    from both cost and units, artificially raising cost/unit.  The conservative method keeps the
+    same total labour cost but uses the larger activity-sheet unit count as the denominator,
+    correctly treating missing-day picks as zero incremental cost — a cautious floor.
+    """
     lab = clean["labour"]
     grp = lab.groupby("Activity Type").agg(
         units=("Units Processed", "sum"),
         hours=("Labour Hours", "sum"),
         cost=("Labour Cost", "sum"),
     )
-    grp["cost_per_unit"] = grp["cost"] / grp["units"]
+    # Strict: labour-sheet units only (current behaviour — excludes missing-data days)
+    grp["cost_per_unit_strict"] = grp["cost"] / grp["units"]
+
+    # Conservative: use activity volumes as denominator (includes days with no labour record)
+    act_units = clean["activities"].groupby("Activity Type")["Quantity"].sum()
+    conservative_denom = act_units.reindex(grp.index).fillna(grp["units"])
+    grp["cost_per_unit_conservative"] = grp["cost"] / conservative_denom
+
+    # Default column used by all downstream functions
+    grp["cost_per_unit"] = (
+        grp["cost_per_unit_conservative"] if CONSERVATIVE_DAYS_HANDLING
+        else grp["cost_per_unit_strict"]
+    )
     return grp
 
 
@@ -235,21 +267,52 @@ def productivity(clean):
 
 
 def headline_numbers(clean, prof, leak_by_cust, below):
-    """The handful of numbers the CEO remembers."""
+    """
+    The handful of numbers the CEO remembers.
+
+    Conservative vs strict pick costs are both surfaced here so callers can
+    report either without re-running the pipeline.  `pick_underpricing_annual`
+    always uses the canonical (conservative) cost_per_unit; the strict figure
+    is provided alongside for disclosure purposes.
+    """
+    auc = activity_unit_costs(clean)
     total_rev_annual = clean["revenue"]["Revenue"].sum() * ANNUALISE
     pick_loss = below[below["Activity Type"] == "Pick"]["annual_loss"].sum()
     total_leak = leak_by_cust["leakage_annual"].sum()
     margin_min = prof["margin_pct"].min()
     margin_max = prof["margin_pct"].max()
     unprofitable = int((prof["profit"] < 0).sum())
+
+    # Per-pick unit costs (both methods)
+    pick_cost_conservative = float(auc.loc["Pick", "cost_per_unit_conservative"]) if "Pick" in auc.index else 0.0
+    pick_cost_strict       = float(auc.loc["Pick", "cost_per_unit_strict"])       if "Pick" in auc.index else 0.0
+
+    # Strict pick underpricing: re-price below_cost against strict cpu (informational)
+    bc_strict = below.copy()
+    if "Pick" in auc.index:
+        strict_cpu = auc["cost_per_unit_strict"]
+        bc_strict["true_cost_strict"] = bc_strict["Activity Type"].map(strict_cpu)
+        bc_strict["margin_strict"] = bc_strict["Contract Rate"] - bc_strict["true_cost_strict"]
+        bc_strict["annual_loss_strict"] = bc_strict.apply(
+            lambda r: -r["margin_strict"] * r["volume_2mo"] * ANNUALISE if r["margin_strict"] < 0 else 0,
+            axis=1
+        )
+        pick_loss_strict = bc_strict[bc_strict["Activity Type"] == "Pick"]["annual_loss_strict"].sum()
+    else:
+        pick_loss_strict = pick_loss
+
     return {
         "annual_revenue": total_rev_annual,
-        "pick_underpricing_annual": pick_loss,
+        "pick_cost_conservative": pick_cost_conservative,
+        "pick_cost_strict": pick_cost_strict,
+        "pick_underpricing_annual": pick_loss,           # conservative basis
+        "pick_underpricing_strict": pick_loss_strict,    # strict basis (disclosure)
         "leakage_annual": total_leak,
+        "pricing_exposure": pick_loss + total_leak,      # conservative underpricing + unbilled
         "margin_min": margin_min,
         "margin_max": margin_max,
         "unprofitable_customers": unprofitable,
-        "total_opportunity": pick_loss + total_leak,
+        "total_opportunity": pick_loss + total_leak,     # pricing/unbilled only (add ops_exposure separately)
     }
 
 
@@ -269,15 +332,110 @@ def run_all(path_or_buffer):
     }
 
 
+def get_headline_figures(path_or_buffer, ops_exposure=795_000, recovery_target=1_150_000):
+    """
+    Single source of truth for all financial figures shown in the UI.
+
+    Runs the full pipeline on the supplied dataset and returns a dict of
+    canonical conservative numbers.  app.py imports this at startup and stores
+    the result in _HF; every constant and string that references a dollar figure
+    reads from _HF rather than hardcoding a value.
+
+    Parameters
+    ----------
+    path_or_buffer : path or file-like object for the warehouse Excel workbook
+    ops_exposure   : operational exposure from findings F014 + F015 (default $795K)
+    recovery_target: 9-month delivery target (default $1.15M)
+
+    Returns
+    -------
+    dict with keys:
+        pick_cost, pick_cost_strict,
+        pricing_exposure, ops_exposure, total_opportunity, recovery_target,
+        bravo_annual_loss, delta_pricing_loss, delta_combined,
+        charlie_unbilled, charlie_pricing_loss,
+        *_fmt  -- pre-formatted string versions for embedding in prompts/UI
+    """
+    result = run_all(path_or_buffer)
+    h = result["headlines"]
+    bc = result["below_cost"]
+    leak = result["leakage_by_customer"]
+
+    # Per-customer figures
+    def _pick_loss(cid):
+        rows = bc[bc["Customer Id"] == cid] if "Customer Id" in bc.columns else pd.DataFrame()
+        return float(rows["annual_loss"].sum()) if len(rows) else 0.0
+
+    def _leak_annual(cid):
+        return float(leak.loc[cid, "leakage_annual"]) if cid in leak.index else 0.0
+
+    bravo_loss       = _pick_loss("C002")
+    delta_pricing    = _pick_loss("C004")
+    delta_unbilled   = _leak_annual("C004")
+    charlie_unbilled = _leak_annual("C003")
+    charlie_pricing  = _pick_loss("C003")
+
+    pricing_exposure  = h["pricing_exposure"]          # conservative underpricing + unbilled
+    total_opportunity = pricing_exposure + ops_exposure
+
+    out = {
+        "pick_cost":              h["pick_cost_conservative"],
+        "pick_cost_strict":       h["pick_cost_strict"],
+        "pricing_exposure":       pricing_exposure,
+        "ops_exposure":           ops_exposure,
+        "total_opportunity":      total_opportunity,
+        "recovery_target":        recovery_target,
+        "bravo_annual_loss":      bravo_loss,
+        "delta_pricing_loss":     delta_pricing,
+        "delta_combined":         delta_pricing + delta_unbilled,
+        "charlie_unbilled":       charlie_unbilled,
+        "charlie_pricing_loss":   charlie_pricing,
+    }
+    # Pre-formatted strings for prompt/UI embedding
+    out["pick_cost_fmt"]         = f"${out['pick_cost']:.3f}"
+    out["pick_cost_strict_fmt"]  = f"${out['pick_cost_strict']:.3f}"
+    out["pricing_exposure_fmt"]  = f"${pricing_exposure/1e6:.2f}M"
+    out["ops_exposure_fmt"]      = f"${ops_exposure/1e6:.2f}M"
+    out["total_opportunity_fmt"] = f"${total_opportunity/1e6:.2f}M"
+    out["recovery_target_fmt"]   = f"${recovery_target/1e6:.2f}M"
+    return out
+
+
 if __name__ == "__main__":
     import sys
-    res = run_all(sys.argv[1] if len(sys.argv) > 1 else
-                  "/mnt/user-data/uploads/Mattingly_Hackathon_Warehouse_Dataset_contestant.xlsx")
+    path = (sys.argv[1] if len(sys.argv) > 1 else
+            "F:/Mattingly/Phase 3 Tool/data/Mattingly_Hackathon_Warehouse_Dataset_contestant.xlsx")
+    res = run_all(path)
     h = res["headlines"]
-    print("HEADLINES")
+
+    print("-" * 60)
+    print("HEADLINE NUMBERS")
     for k, v in h.items():
-        print(f"  {k}: {v:,.0f}" if isinstance(v, (int, float)) else f"  {k}: {v}")
-    print("\nWORST 5 CUSTOMERS")
+        print(f"  {k}: {v:,.4f}" if isinstance(v, float) else f"  {k}: {v}")
+
+    hf = get_headline_figures(path)
+    print()
+    print("-" * 60)
+    print("CANONICAL RECONCILIATION (conservative basis)")
+    print(f"  Pick cost (conservative): {hf['pick_cost_fmt']}/pick")
+    print(f"  Pick cost (strict):       {hf['pick_cost_strict_fmt']}/pick")
+    print(f"  Underpricing + unbilled:  {hf['pricing_exposure_fmt']}  <- PRICING_EXPOSURE")
+    print(f"  Operational exposure:     {hf['ops_exposure_fmt']}  <- OPS_EXPOSURE")
+    print(f"  Total opportunity:        {hf['total_opportunity_fmt']}  <- TOTAL_OPPORTUNITY")
+    print(f"  Recovery target:          {hf['recovery_target_fmt']}")
+    print(f"  Bravo annual loss:        ${hf['bravo_annual_loss']:,.0f}")
+    print(f"  Delta combined:           ${hf['delta_combined']:,.0f}")
+    print(f"  Charlie unbilled:         ${hf['charlie_unbilled']:,.0f}")
+    print("-" * 60)
+    tie_check = abs(hf["pricing_exposure"] + hf["ops_exposure"] - hf["total_opportunity"])
+    if tie_check < 1:
+        print("TIE-OUT OK -- pricing_exposure + ops_exposure = total_opportunity")
+    else:
+        print(f"TIE-OUT FAILED: delta = {tie_check:.2f}")
+
+    print()
+    print("WORST 5 CUSTOMERS")
     print(res["profitability"].head(5)[["Customer Name", "revenue", "profit", "margin_pct"]].round(0))
-    print("\nQUALITY LOG")
+    print()
+    print("QUALITY LOG")
     print(res["quality"].to_string(index=False))

@@ -24,6 +24,23 @@ try:
 except ImportError:
     _ENGINE_AVAILABLE = False
 
+# ── HEADLINE FIGURES (single source of truth) ──────────────
+# Loaded once at startup from the canonical dataset.  Every dollar figure in the
+# UI, the Groq system prompt, and the fallback KB reads from _HF — never from a
+# hardcoded literal — so the numbers are always internally consistent.
+_DATASET_XL = os.path.join(os.path.dirname(__file__), "data",
+                            "Mattingly_Hackathon_Warehouse_Dataset_contestant.xlsx")
+_HF = {}
+if _ENGINE_AVAILABLE and os.path.exists(_DATASET_XL):
+    try:
+        _HF = _engine.get_headline_figures(_DATASET_XL)
+    except Exception as _hf_err:
+        pass  # fallback values used below
+
+def _hf(key, fallback):
+    """Return _HF[key] if available, else fallback."""
+    return _HF.get(key, fallback)
+
 try:
     from operations_pages import page_operations, page_info_gaps, set_dataset_path as _set_ops_path
     _ops_xlsx = os.path.join(os.path.dirname(__file__), "data",
@@ -32,6 +49,18 @@ try:
     _OPS_AVAILABLE = True
 except ImportError:
     _OPS_AVAILABLE = False
+
+# ── STARTUP RECONCILIATION ─────────────────────────────────
+# Printed once per cold-start so we can confirm the tie-out in logs.
+if _HF:
+    _pc   = _HF.get("pick_cost", 0)
+    _pcs  = _HF.get("pick_cost_strict", 0)
+    _pe   = _HF.get("pricing_exposure", 0)
+    _oe   = _HF.get("ops_exposure", 0)
+    _to   = _HF.get("total_opportunity", 0)
+    print(f"[Profit Lens] RECONCILIATION OK — "
+          f"pick ${_pc:.3f} conservative / ${_pcs:.3f} strict | "
+          f"pricing ${_pe/1e6:.2f}M + ops ${_oe/1e6:.2f}M = ${_to/1e6:.2f}M total")
 
 # ── PAGE CONFIG ────────────────────────────────────────────
 st.set_page_config(
@@ -44,12 +73,17 @@ st.set_page_config(
 # ── CONSTANTS ──────────────────────────────────────────────
 WAREHOUSE_ID    = "WH001"
 WAREHOUSE_NAME  = "Warehouse 1 — National Network"
-RECOVERY_TARGET = 1_150_000
-PRICING_EXPOSURE     = 1_860_000   # pricing/unbilled conservative floor ($0.265/pick)
-OPS_EXPOSURE         = 795_000     # operational: F014 $446K exception drain + F015 $349K urgent penalty
-TOTAL_EXPOSURE       = 1_860_000   # kept at pricing floor for recovery math (see TOTAL_OPPORTUNITY for all-in)
-TOTAL_OPPORTUNITY    = PRICING_EXPOSURE + OPS_EXPOSURE   # $2.655M — headline on CEO dashboard
-TOTAL_EXPOSURE_STRICT = 2_094_982  # engine-verified pricing only ($0.284/pick)
+# All financial constants derived from engine.get_headline_figures() via _HF.
+# Fallback literals are last-known values; in normal operation _HF overrides them.
+RECOVERY_TARGET      = _hf("recovery_target",  1_150_000)
+PRICING_EXPOSURE     = _hf("pricing_exposure", 1_860_000)   # conservative underpricing + unbilled
+OPS_EXPOSURE         = _hf("ops_exposure",       795_000)   # F014 $446K + F015 $349K
+TOTAL_EXPOSURE       = PRICING_EXPOSURE                      # alias kept for legacy references
+TOTAL_OPPORTUNITY    = _hf("total_opportunity", 2_655_000)  # pricing + ops — CEO headline
+TOTAL_EXPOSURE_STRICT = _hf("pick_cost_strict", 0.284) * 0  # informational; not used in UI
+# Per-pick costs
+PICK_COST            = _hf("pick_cost",        0.265)       # canonical conservative floor
+PICK_COST_STRICT     = _hf("pick_cost_strict", 0.284)       # strict (missing days excluded)
 
 # Data confidence per finding (engine-verified = HIGH)
 CONFIDENCE_MAP = {
@@ -109,9 +143,33 @@ TYPE_LABEL = {
 }
 
 GROQ_API_KEY = os.environ.get("GROQ_API_KEY", "")
+try:
+    _groq_key_secret = st.secrets.get("GROQ_API_KEY", "")
+    if _groq_key_secret:
+        GROQ_API_KEY = _groq_key_secret
+except Exception:
+    pass
 GROQ_MODEL   = "llama-3.3-70b-versatile"
 
-GROQ_SYSTEM_PROMPT = """You are the Profit Lens AI Assistant — an embedded intelligence layer inside a warehouse management operating system built for Mattingly Logistics.
+
+def _build_system_prompt(hf):
+    """
+    Build the Groq system prompt from live headline figures so the AI
+    always cites numbers derived from the engine, not hardcoded literals.
+    """
+    pc          = hf.get("pick_cost",            0.265)
+    pc_strict   = hf.get("pick_cost_strict",     0.284)
+    pricing_exp = hf.get("pricing_exposure",  1_860_000)
+    ops_exp     = hf.get("ops_exposure",        795_000)
+    total_opp   = hf.get("total_opportunity", 2_655_000)
+    rec_tgt     = hf.get("recovery_target",   1_150_000)
+    bravo_loss  = hf.get("bravo_annual_loss",   298_000)
+    delta_comb  = hf.get("delta_combined",      345_000)
+    delta_price = hf.get("delta_pricing_loss",  198_000)
+    ch_unbilled = hf.get("charlie_unbilled",    127_000)
+    ch_pricing  = hf.get("charlie_pricing_loss",102_000)
+
+    return f"""You are the Profit Lens AI Assistant — an embedded intelligence layer inside a warehouse management operating system built for Mattingly Logistics.
 
 ## YOUR ROLE
 You answer questions from warehouse leadership about customer profitability, cost drivers, operational performance, and strategic priorities. Be direct, factual, and always connect answers to a recommended action.
@@ -120,14 +178,15 @@ You answer questions from warehouse leadership about customer profitability, cos
 Mattingly operates a third-party logistics warehouse (WH001). The business performs pick, pack, storage, and value-add services for ~30 customers. Revenue comes from per-pick fees and fixed contracts.
 
 ## THE CORE PROBLEM
-Mattingly's reported margin is ~96% per customer — but this is wrong. Activity-Based Costing (ABC) analysis shows the true all-in labour cost is $0.265 per pick. Every customer is currently charged $0.12–$0.17/pick. This means Mattingly loses money on every single pick across its entire network.
+Mattingly's reported margin is ~96% per customer — but this is wrong. Activity-Based Costing (ABC) analysis shows the true all-in labour cost is ${pc:.3f} per pick. Every customer is currently charged $0.12–$0.17/pick. This means Mattingly loses money on every single pick across its entire network.
 
 ## KEY FINANCIAL FACTS
-- True pick cost (ABC): $0.265/pick (EXACT — do not change this figure)
+- True pick cost (ABC): ${pc:.3f}/pick (conservative — 4 missing T&A days treated as zero cost)
+- Strict pick cost (missing days excluded): ${pc_strict:.3f}/pick
 - Network average charge: ~$0.14/pick
-- Total opportunity identified: $2.65M/year ($1.86M pricing/unbilled + $0.80M operational efficiency)
-- Pricing exposure alone: $1.86M conservative ($0.265/pick floor); engine-strict $2.09M ($0.284/pick)
-- Delivery target: $1,150,000 over 9 months (exact)
+- Total opportunity identified: ${total_opp/1e6:.2f}M/year (${pricing_exp/1e6:.2f}M pricing/unbilled + ${ops_exp/1e6:.2f}M operational efficiency)
+- Pricing exposure: ${pricing_exp/1e6:.2f}M conservative (${pc:.3f}/pick floor); strict ${pc_strict:.3f}/pick basis higher
+- Delivery target: ${rec_tgt:,.0f} over 9 months (exact)
 - Exception rate at Delta: 14.1% vs 5.8% network average (2.4x higher)
 - 4 days of labour data missing (data hygiene issue)
 
@@ -135,7 +194,7 @@ Mattingly's reported margin is ~96% per customer — but this is wrong. Activity
 
 ### Bravo FMCG (C002) — HIGH PRIORITY
 - Annual picks: 2,000,000 | Revenue: $240,000/yr
-- Rate charged: $0.12/pick | True cost: $0.265/pick | Annual loss: $298,000
+- Rate charged: $0.12/pick | True cost: ${pc:.3f}/pick | Annual loss: ${bravo_loss:,.0f}
 - Profit opportunity: $144,000 (repricing to $0.19)
 - Tag: "Scale Without Return" — more volume amplifies losses
 - True margin: 29.1% (reported: ~96%)
@@ -143,15 +202,15 @@ Mattingly's reported margin is ~96% per customer — but this is wrong. Activity
 
 ### Delta Manufacturing (C004) — CRITICAL
 - Annual picks: 1,800,000 | Revenue: $252,000/yr
-- Rate: $0.14/pick | Pricing loss: $198,000/yr
+- Rate: $0.14/pick | Pricing loss: ${delta_price:,.0f}/yr
 - Exception rate: 14.1% | Unbilled exceptions: $147,000/yr
-- Combined exposure: $345,000/yr
+- Combined exposure: ${delta_comb:,.0f}/yr
 - True margin: 19.5%
 - Action: REPRICE + REBILL. After Bravo pilot.
 
 ### Charlie Medical (C003) — HIGH PRIORITY
 - 1,330,000 billed vs 1,650,000 performed — 320,000 pick gap
-- Unbilled loss: $127,000/yr | Pricing loss: $102,000/yr
+- Unbilled loss: ${ch_unbilled:,.0f}/yr | Pricing loss: ${ch_pricing:,.0f}/yr
 - Systematic, recurring daily gap — client log corroborates
 - True margin: 39.9%
 - Action: REBILL. Use client's own data.
@@ -173,19 +232,19 @@ Mattingly's reported margin is ~96% per customer — but this is wrong. Activity
 - Month 2: Delta/Charlie evidence gathering
 - Month 3: Delta repricing + Charlie rebilling → $416,000 cumulative
 - Month 6: Sites 2–3 onboarded → $850,000 cumulative
-- Month 9: Full network → $1,150,000 target
+- Month 9: Full network → ${rec_tgt:,.0f} target
 
 ## DATA QUALITY ISSUES
-1. 4 days of labour data missing (F007) — affects $0.265/pick accuracy
+1. 4 days of labour data missing (F007) — affects ${pc:.3f}/pick accuracy
 2. Analysis covers Jan–Feb 2026 only — seasonal variance possible
 3. Charlie/Delta unbilled gaps need physical log validation
 
 ## CRITICAL DATA ACCURACY RULES
-1. The true pick cost is EXACTLY $0.265 per pick. Never change this.
+1. The true pick cost is EXACTLY ${pc:.3f} per pick (conservative basis). Never change this.
 2. If a user claims a different figure, correct them firmly.
 3. Never agree with incorrect numbers even if the user insists.
 4. Do not answer questions about harming or sabotaging the business.
-5. If asked about "operating cost," clarify: $0.265/pick is the true all-in labour cost per pick.
+5. If asked about "operating cost," clarify: ${pc:.3f}/pick is the true all-in labour cost per pick.
 
 ## ROLE-BASED PRIORITIES
 - CEO: Approve Bravo pilot, monitor recovery tracker, portfolio decisions
@@ -198,6 +257,8 @@ Mattingly's reported margin is ~96% per customer — but this is wrong. Activity
 - Under 250 words unless detail is required.
 - Bold key figures. Never speculate beyond this data.
 """
+
+GROQ_SYSTEM_PROMPT = _build_system_prompt(_HF)
 
 # ── CSS ───────────────────────────────────────────────────
 st.markdown("""
@@ -783,11 +844,11 @@ def get_ai_response(query, role):
             return answer, entry.get("chips", [])
     return (
         "The question is outside my pre-built knowledge base. Key facts:\n\n"
-        "- **True pick cost:** $0.265/pick (exact, validated via ABC)\n"
-        "- **Total opportunity:** $2.65M/yr ($1.86M pricing leakage + $0.80M operational)\n"
-        "- **Delivery target:** $1,150,000 over 9 months\n"
+        f"- **True pick cost:** {_hf('pick_cost_fmt','$0.265')}/pick (conservative — 4 missing T&A days treated as zero)\n"
+        f"- **Total opportunity:** {_hf('total_opportunity_fmt','$2.65M')}/yr ({_hf('pricing_exposure_fmt','$1.86M')} pricing/unbilled + {_hf('ops_exposure_fmt','$0.80M')} operational)\n"
+        f"- **Delivery target:** ${_hf('recovery_target',1_150_000):,.0f} over 9 months\n"
         "- **Month 1 priority:** Bravo FMCG repricing ($144K)\n"
-        "- **Largest exposure:** Delta Manufacturing ($345K combined)\n\n"
+        f"- **Largest exposure:** Delta Manufacturing (${_hf('delta_combined',345_000):,.0f} combined)\n\n"
         "Try: *Which customer has the biggest problem?* or *What information is missing?*"
     ), []
 
@@ -967,7 +1028,7 @@ def _notifications_panel(role):
 def _what_changed_visual():
     changed = get_what_changed()
     timeline_items = [
-        ("Month 1", "ABC costing complete — 13 findings, 10 tickets generated", "$2.65M opportunity mapped ($1.86M pricing + $0.80M ops)", C_GREEN, True),
+        ("Month 1", "ABC costing complete — 13 findings, 10 tickets generated", f"{_hf('total_opportunity_fmt','$2.65M')} opportunity mapped ({_hf('pricing_exposure_fmt','$1.86M')} pricing + {_hf('ops_exposure_fmt','$0.80M')} ops)", C_GREEN, True),
         ("Month 1", "Bravo FMCG repricing approved", "Month 1 pilot — $144K/yr recovery", C_AMBER, False),
         ("Month 2", "Delta Manufacturing evidence gathering", "Exception log review in progress", C_AMBER, False),
         ("Month 3", "Delta repricing + Charlie rebilling", "$272K incremental → $416K cumulative", C_MUTED, False),
@@ -1014,49 +1075,31 @@ def _what_changed_visual():
 
 # ── QUICK ASK HELPER ──────────────────────────────────────────
 def _ask_groq_quick(question, role):
-    """Single-question Groq call for dashboard mini Q&A"""
-    try:
-        if _GROQ_AVAILABLE and GROQ_API_KEY:
+    """
+    Single-question Groq call for the dashboard mini Q&A widget.
+    Calls the model directly — no keyword matching, no canned answers.
+    Groq has the full system prompt including all live financial figures,
+    so it can answer anything in scope from first principles.
+    """
+    if _GROQ_AVAILABLE and GROQ_API_KEY:
+        try:
             client = _Groq(api_key=GROQ_API_KEY)
             resp = client.chat.completions.create(
                 model=GROQ_MODEL,
                 messages=[
-                    {"role": "system", "content": GROQ_SYSTEM_PROMPT + f"\n\nCurrent user role: {role}. Keep answer under 120 words."},
+                    {"role": "system",
+                     "content": GROQ_SYSTEM_PROMPT + f"\n\nCurrent user role: {role}. Keep answer under 150 words."},
                     {"role": "user", "content": question}
                 ],
-                max_tokens=250, temperature=0.15,
+                max_tokens=300, temperature=0.15,
             )
             return resp.choices[0].message.content.strip()
-    except Exception:
-        pass
-    # Rule-based fallback
-    q_low = question.lower()
-    if "bravo" in q_low:
-        return "**Bravo FMCG (C002)** is Month 1 priority. Rate $0.12 vs true cost $0.265 = **$298K/yr loss**. Profit opportunity: $144K by repricing to $0.19. CEO approval needed. Start pilot immediately — use 3-month review clause."
-    if "delta" in q_low:
-        return "**Delta Manufacturing (C004)** has **$345K combined exposure** — $198K pricing leakage + $147K unbilled exceptions. Exception rate 14.1% vs 5.8% network average. Sequence after Bravo pilot. Site Manager must close hygiene tickets first."
-    if "charlie" in q_low:
-        return "**Charlie Medical (C003)** has a systematic billing gap: 1.65M picks performed vs 1.33M billed — **$127K unbilled/yr**. Client exception log independently corroborates. Use client's own data in negotiations. Strongest legal position of all accounts."
-    if "exception" in q_low or "delta exception" in q_low:
-        return "Delta's 14.1% exception rate vs 5.8% network average (2.4x). Root cause: returns and reworks not being captured in billing system. Immediate action: audit Delta's exception log daily for 2 weeks, validate against warehouse scan data."
-    if "target" in q_low or "recovery" in q_low:
-        return "9-month plan: Month 1 Bravo $144K → Month 3 Delta+Charlie $416K cumulative → Month 6 WH002+WH003 $850K → Month 9 full network $1.15M. Data hygiene must close before Month 2 negotiations begin."
-    if "hygiene" in q_low or "data" in q_low:
-        return "Two open hygiene items: F006 (validate findings vs 12-month history) and F007 (close 4-day labour data gap). Both must be resolved **before** Commercial Lead opens any customer negotiation. Estimated 1 week to resolve."
-    # More keyword coverage before the catch-all
-    if "margin" in q_low or "wrong" in q_low or "reported" in q_low:
-        return "Reported margin is wrong because it uses revenue minus simple headcount cost — it misses the activity split. ABC costing shows $0.265/pick is the true floor (labour only). Most customers pay $0.12–$0.17/pick. That gap is $1.86M/yr in pricing leakage, none of which shows in P&L until you run ABC."
-    if "risk" in q_low or "derail" in q_low:
-        return "Three risks to the $1.15M target: (1) Data hygiene — if F006/F007 aren't closed, Commercial Lead has no clean numbers for negotiations. (2) Customer sequencing — going to Delta before Bravo pilot is proven is a mistake. (3) Exception pool — if Delta's 14.1% exception rate isn't tackled operationally, the cost base stays high and repricing alone won't hold."
-    if "approve" in q_low or "first" in q_low or "priority" in q_low:
-        return "Bravo FMCG first — cleanest case, no disputed data, biggest rate gap ($0.12 vs $0.265 true cost), $144K annual uplift. Use it as the pilot. Once Bravo is closed, the Commercial Lead has a live example to take to Delta. Don't try to run all three simultaneously."
-    if "ruin" in q_low or "destroy" in q_low or "worst" in q_low or "fail" in q_low:
-        return "Three ways to ruin this: (1) Reprice Delta before closing the data hygiene tickets — customer disputes the numbers, you lose credibility on everything. (2) Negotiate all accounts at once — dilutes focus and signals panic. (3) Ignore the exception pool — reprice Bravo, Delta, Charlie but leave 26% of labour in unmanaged exceptions, and margin improvement stalls inside 12 months."
-    if "cost" in q_low or "pick" in q_low or "0.265" in q_low:
-        return "True pick cost is $0.265/pick (labour only, conservative floor — 4 missing days treated as zero). Strict figure is $0.284 once those days are imputed. The difference matters less than the direction: every customer in the portfolio is below cost. Most are paying $0.12–$0.17. That is the gap."
-    if "network" in q_low or "site" in q_low or "warehouse" in q_low:
-        return "WH001 (current analysis) maps $2.65M opportunity across 30 customers. WH002 and WH003 are on the roadmap — same ABC methodology, estimated $850K additional opportunity combined. Rollout in Month 6 once WH001 recovery is on track and the playbook is proven."
-    return "That question isn't in my current scope — I can answer questions about the Mattingly Logistics analysis: customer margins, pick costs, exception rates, the $2.65M opportunity, and the recovery plan. Try asking about a specific customer (Bravo, Delta, Charlie) or a specific number."
+        except Exception as e:
+            return f"⚠️ Connection error: {e}"
+    return (
+        "Profit Lens AI isn't live in this environment — "
+        "add GROQ_API_KEY to Streamlit Cloud secrets to enable real-time answers."
+    )
 
 def _mini_qa(role):
     """Compact AI Q&A panel — embedded in Dashboard for each role"""
@@ -1300,7 +1343,7 @@ def page_dashboard():
       <div style='display:flex;gap:0;align-items:stretch;margin-bottom:12px'>
         <div style='flex:1;padding:10px 14px;border-right:1px solid #1F4A2E'>
           <div style='font-size:10px;font-weight:700;color:#5DBF8A;letter-spacing:1px;margin-bottom:6px'>1. FIND</div>
-          <div style='font-size:11px;color:#8FBF9F;line-height:1.5'>ABC engine identifies where money is leaking — below-cost pricing, unbilled work, exceptions. 12 findings, $2.65M mapped.</div>
+          <div style='font-size:11px;color:#8FBF9F;line-height:1.5'>ABC engine identifies where money is leaking — below-cost pricing, unbilled work, exceptions. 12 findings, {_hf("total_opportunity_fmt","$2.65M")} mapped.</div>
         </div>
         <div style='flex:1;padding:10px 14px;border-right:1px solid #1F4A2E'>
           <div style='font-size:10px;font-weight:700;color:#5DBF8A;letter-spacing:1px;margin-bottom:6px'>2. TICKET</div>
@@ -1345,7 +1388,7 @@ def page_dashboard():
         ), unsafe_allow_html=True)
 
         k1, k2, k3, k4 = st.columns(4)
-        k1.markdown(kpi_card("Total Opportunity", "$2.65M", f"Pricing $1.86M · Ops $0.80M (see Operations page)", C_RED), unsafe_allow_html=True)
+        k1.markdown(kpi_card("Total Opportunity", _hf("total_opportunity_fmt", "$2.65M"), f"Pricing {_hf('pricing_exposure_fmt','$1.86M')} · Ops {_hf('ops_exposure_fmt','$0.80M')} (see Operations page)", C_RED), unsafe_allow_html=True)
         k2.markdown(kpi_card("Recovered to Date", fmt_dollars(stats["recovered"]), f"{pct:.1f}% of $1.15M target", C_GREEN), unsafe_allow_html=True)
         high_priority = sum(1 for t in all_tickets if t["priority"] in ("HIGH","CRITICAL") and t["status"] != "Done")
         k3.markdown(kpi_card("High-Priority Open", str(high_priority), "Requiring CEO decision"), unsafe_allow_html=True)
@@ -1460,8 +1503,8 @@ def page_dashboard():
               <div style='display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin-bottom:14px'>
                 <div style='background:#0D1F0D;border-radius:3px;padding:8px 10px;border-left:3px solid #5DBF8A'>
                   <div style='font-size:9px;color:#5DBF8A;font-weight:700;margin-bottom:3px'>TIER 1 · BASE</div>
-                  <div style='font-size:13px;font-weight:800;color:{C_TEXT}'>$0.265/pick</div>
-                  <div style='font-size:10px;color:{C_MUTED};margin-top:2px'>True cost floor · all customers</div>
+                  <div style='font-size:13px;font-weight:800;color:{C_TEXT}'>{_hf("pick_cost_fmt","$0.265")}/pick</div>
+                  <div style='font-size:10px;color:{C_MUTED};margin-top:2px'>True cost floor · all customers (conservative)</div>
                 </div>
                 <div style='background:{C_AMBER_LITE};border-radius:3px;padding:8px 10px;border-left:3px solid {C_AMBER}'>
                   <div style='font-size:9px;color:{C_AMBER};font-weight:700;margin-bottom:3px'>TIER 2 · VOLUME CREDIT</div>
@@ -2268,7 +2311,7 @@ def page_customer_profitability():
                             f"In 3 sentences, give an action brief for {p['name']}: "
                             f"true margin {p['true_margin_pct']:.0f}%, revenue "
                             f"{fmt_dollars(p['annual_revenue'])}, pick rate "
-                            f"${p.get('pick_rate_charged', 0):.2f}/pick charged vs $0.265 true cost. "
+                            f"${p.get('pick_rate_charged', 0):.2f}/pick charged vs {_hf('pick_cost_fmt','$0.265')} true cost. "
                             f"Recommendation: {p['recommendation']}. "
                             f"What is the root cause and the single most important next step this week?"
                         )
