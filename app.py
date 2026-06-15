@@ -16,6 +16,17 @@ try:
 except ImportError:
     _GROQ_AVAILABLE = False
 
+# ── Hybrid LLM routing layer ───────────────────────────────────
+# Nemotron → structured operational outputs (next action, ticket enhancement, brief)
+# Groq     → conversational chatbot + inline Q&A
+# See llm.py for routing logic and graceful degradation.
+try:
+    import llm as _llm
+    _LLM_AVAILABLE = True
+except ImportError:
+    _llm = None
+    _LLM_AVAILABLE = False
+
 import database as db
 
 try:
@@ -161,6 +172,10 @@ if not GROQ_API_KEY:
     except Exception:
         pass
 GROQ_MODEL   = "llama-3.3-70b-versatile"
+
+# Initialise llm.py routing layer (sets NVIDIA + Groq keys in that module's scope)
+if _LLM_AVAILABLE:
+    _llm.init_keys()
 
 
 def _build_system_prompt(hf):
@@ -961,7 +976,8 @@ def _notifications_panel(role):
         with col_btn:
             regen = st.button("↻ Refresh", key=f"notif_regen_{role}", help="Regenerate AI brief from current ticket data")
 
-        if _GROQ_AVAILABLE and GROQ_API_KEY:
+        _brief_ai_ready = (_LLM_AVAILABLE or (_GROQ_AVAILABLE and GROQ_API_KEY))
+        if _brief_ai_ready:
             if cache_key not in st.session_state or regen:
                 try:
                     all_t = db.get_tickets(WAREHOUSE_ID)
@@ -977,7 +993,11 @@ def _notifications_panel(role):
                         )
                     ticket_ctx = "\n".join(ticket_lines) if ticket_lines else "  (no open tickets)"
 
-                    prompt = (
+                    brief_system = (
+                        "You generate concise operational notification briefs. "
+                        "Use exact numbers from context. No fluff."
+                    )
+                    brief_prompt = (
                         f"You are Profit Lens, an AI operations assistant for Mattingly Logistics warehouse WH001. "
                         f"Write a concise situational notification brief for the {role}. "
                         f"Current state: ${recovered:,.0f} recovered of $1,150,000 target. "
@@ -988,19 +1008,30 @@ def _notifications_panel(role):
                         f"Tailor to {role} perspective. Be specific about ticket names and amounts."
                     )
 
-                    client = _Groq(api_key=GROQ_API_KEY)
-                    resp = client.chat.completions.create(
-                        model=GROQ_MODEL,
-                        messages=[
-                            {"role": "system", "content": "You generate concise operational notification briefs. Use exact numbers from context. No fluff."},
-                            {"role": "user",   "content": prompt}
-                        ],
-                        max_tokens=300,
-                        temperature=0.3,
-                    )
-                    ai_brief = resp.choices[0].message.content.strip()
-                    st.session_state[cache_key] = ai_brief
-                except Exception as e:
+                    # ── Nemotron → Groq → None ──────────────────────
+                    ai_brief = None
+                    if _LLM_AVAILABLE:
+                        try:
+                            ai_brief = _llm.call_structured(brief_system, brief_prompt, max_tokens=300)
+                        except Exception:
+                            pass
+                    if not ai_brief and _GROQ_AVAILABLE and GROQ_API_KEY:
+                        try:
+                            client = _Groq(api_key=GROQ_API_KEY)
+                            resp = client.chat.completions.create(
+                                model=GROQ_MODEL,
+                                messages=[
+                                    {"role": "system", "content": brief_system},
+                                    {"role": "user",   "content": brief_prompt}
+                                ],
+                                max_tokens=300,
+                                temperature=0.3,
+                            )
+                            ai_brief = resp.choices[0].message.content.strip()
+                        except Exception:
+                            pass
+                    st.session_state[cache_key] = ai_brief or None
+                except Exception:
                     st.session_state[cache_key] = None
 
             ai_text = st.session_state.get(cache_key)
@@ -1019,7 +1050,7 @@ def _notifications_panel(role):
                         f"font-size:12px;color:{C_TEXT};line-height:1.6'>{line}</div>",
                         unsafe_allow_html=True)
             else:
-                st.info("Groq API call failed — check your API key in Streamlit secrets.")
+                st.info("AI brief unavailable — check GROQ_API_KEY / NVIDIA_API_KEY in Streamlit secrets.")
         else:
             # Fallback: static log
             for target_role, icon, color, msg, timing in STATIC_LOG:
@@ -1195,21 +1226,32 @@ def _ai_next_action(role, open_tickets):
         f"WHY: [one sentence: why this matters most right now]\n"
         f"NEXT STEP: [literal next physical step]"
     )
-    try:
-        if _GROQ_AVAILABLE and GROQ_API_KEY:
+    # ── Nemotron → Groq → static fallback ──────────────────────
+    system = (
+        GROQ_SYSTEM_PROMPT
+        + f"\n\nCurrent role: {role}. Be direct, specific, max 60 words total."
+    )
+    if _LLM_AVAILABLE:
+        try:
+            result = _llm.call_structured(system, prompt, max_tokens=150)
+            if result:
+                return result
+        except Exception:
+            pass
+    elif _GROQ_AVAILABLE and GROQ_API_KEY:
+        try:
             client = _Groq(api_key=GROQ_API_KEY)
             resp = client.chat.completions.create(
                 model=GROQ_MODEL,
                 messages=[
-                    {"role": "system", "content": GROQ_SYSTEM_PROMPT
-                     + f"\n\nCurrent role: {role}. Be direct, specific, max 60 words total."},
+                    {"role": "system", "content": system},
                     {"role": "user", "content": prompt}
                 ],
                 max_tokens=150, temperature=0.1,
             )
             return resp.choices[0].message.content.strip()
-    except Exception:
-        pass
+        except Exception:
+            pass
     fallback = {
         "CEO": (
             "ACTION: Approve Bravo FMCG repricing pilot ($144K)\n"
@@ -1245,29 +1287,39 @@ def _ai_enhance_ticket(ticket):
         f"ROOT CAUSE: [why this problem exists \u2014 1 concrete sentence]\n"
         f"NEXT STEP: [the single most important action the owner should take this week]"
     )
-    try:
-        if _GROQ_AVAILABLE and GROQ_API_KEY:
+    # ── Nemotron → Groq → empty dict fallback ──────────────────
+    system = GROQ_SYSTEM_PROMPT + "\nBe specific and operational. Max 50 words per line."
+
+    def _parse_enhance(text):
+        rc = ns = ""
+        for line in text.split("\n"):
+            if line.startswith("ROOT CAUSE:"):
+                rc = line.replace("ROOT CAUSE:", "").strip()
+            elif line.startswith("NEXT STEP:"):
+                ns = line.replace("NEXT STEP:", "").strip()
+        return {"explanation": rc, "action": ns} if (rc or ns) else {}
+
+    if _LLM_AVAILABLE:
+        try:
+            text = _llm.call_structured(system, prompt, max_tokens=130)
+            if text:
+                return _parse_enhance(text)
+        except Exception:
+            pass
+    elif _GROQ_AVAILABLE and GROQ_API_KEY:
+        try:
             client = _Groq(api_key=GROQ_API_KEY)
             resp = client.chat.completions.create(
                 model=GROQ_MODEL,
                 messages=[
-                    {"role": "system", "content": GROQ_SYSTEM_PROMPT
-                     + "\nBe specific and operational. Max 50 words per line."},
+                    {"role": "system", "content": system},
                     {"role": "user", "content": prompt}
                 ],
                 max_tokens=130, temperature=0.1,
             )
-            text = resp.choices[0].message.content.strip()
-            rc = ns = ""
-            for line in text.split("\n"):
-                if line.startswith("ROOT CAUSE:"):
-                    rc = line.replace("ROOT CAUSE:", "").strip()
-                elif line.startswith("NEXT STEP:"):
-                    ns = line.replace("NEXT STEP:", "").strip()
-            if rc or ns:
-                return {"explanation": rc, "action": ns}
-    except Exception:
-        pass
+            return _parse_enhance(resp.choices[0].message.content.strip())
+        except Exception:
+            pass
     return {}
 
 
@@ -2797,8 +2849,17 @@ def page_ai_assistant():
         "AI-powered answers grounded in the Profit Lens dataset"
     ), unsafe_allow_html=True)
 
-    status_txt  = "Groq LLaMA-3.3-70B" if _GROQ_AVAILABLE and GROQ_API_KEY else "Rule-based knowledge base"
-    status_col  = C_GREEN if _GROQ_AVAILABLE and GROQ_API_KEY else C_AMBER
+    if _LLM_AVAILABLE:
+        _ms = _llm.model_status()
+        status_txt = f"Nemotron (structured) + Groq (chat)" if _ms["nvidia_live"] and _ms["groq_live"] else \
+                     (f"Groq {_ms['chat']} (Nemotron offline)" if _ms["groq_live"] else "Rule-based knowledge base")
+        status_col = C_GREEN if (_ms["nvidia_live"] or _ms["groq_live"]) else C_AMBER
+    elif _GROQ_AVAILABLE and GROQ_API_KEY:
+        status_txt = "Groq LLaMA-3.3-70B"
+        status_col = C_GREEN
+    else:
+        status_txt = "Rule-based knowledge base"
+        status_col = C_AMBER
     st.markdown(
         f"<div style='display:inline-block;background:{status_col}18;border:1px solid {status_col}44;"
         f"border-radius:3px;padding:4px 12px;font-size:11px;font-weight:600;color:{status_col};"
@@ -3266,7 +3327,7 @@ def page_load_data():
         all_t = db.get_tickets(WAREHOUSE_ID)
         if all_t:
             df = pd.DataFrame(all_t)[["id","title","customer","priority","finding_type","dollar_impact","status"]]
-            df["dollar_impact"] = df["dollar_impact"].apply(lambda v: fmt_dollars(v) if v > 0 else "\u2014")
+            df["dollar_impact"] = df["dollar_impact"].apply(lambda v: fmt_dollars(v) if v > 0 else "—")
             df.columns = ["ID","Title","Customer","Priority","Type","Impact","Status"]
             st.dataframe(df, use_container_width=True, hide_index=True)
         else:
@@ -3275,10 +3336,9 @@ def page_load_data():
         st.error(f"Error reading tickets: {e}")
 
 
-
-# \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+# ═══════════════════════════════════════════════════════════
 # ROUTER
-# \u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550\u2550
+# ═══════════════════════════════════════════════════════════
 
 def _page_operations_safe():
     if _OPS_AVAILABLE:
