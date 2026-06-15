@@ -1267,7 +1267,7 @@ def page_dashboard():
     _mos_open_tickets = len([t for t in all_tickets if t["status"] != "Done"])
     _mos_blocked      = stats.get("blocked_count", 0)
     _mos_done         = stats.get("done_count", 0)
-    _mos_data_ok      = "LIVE" if DATASET_PATH and os.path.exists(DATASET_PATH) else "DEMO"
+    _mos_data_ok      = "LIVE" if DATA_PATH and os.path.exists(DATA_PATH) else "DEMO"
     _mos_today        = __import__("datetime").date.today().strftime("%d %b %Y")
     _mos_pct          = min(stats["recovered"] / RECOVERY_TARGET * 100, 100) if RECOVERY_TARGET else 0
     st.markdown(f"""
